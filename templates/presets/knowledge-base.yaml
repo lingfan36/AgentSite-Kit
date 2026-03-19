@@ -1,0 +1,28 @@
+name: "Knowledge Base"
+description: "Optimized for knowledge bases combining docs, FAQ, and articles"
+
+config:
+  scan:
+    maxPages: 300
+    include:
+      - "/docs/**"
+      - "/help/**"
+      - "/faq/**"
+      - "/kb/**"
+      - "/support/**"
+      - "/articles/**"
+      - "/guides/**"
+    exclude:
+      - "/admin/**"
+  access:
+    allowedTypes:
+      - docs
+      - faq
+      - blog
+      - about
+  output:
+    formats:
+      - llms-txt
+      - agent-sitemap
+      - agent-index
+      - structured

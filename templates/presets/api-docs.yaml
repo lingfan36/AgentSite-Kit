@@ -1,0 +1,29 @@
+name: "API Documentation"
+description: "Optimized for API documentation sites (OpenAPI/Swagger friendly)"
+
+config:
+  scan:
+    maxPages: 300
+    include:
+      - "/api/**"
+      - "/docs/**"
+      - "/reference/**"
+      - "/endpoints/**"
+      - "/guides/**"
+      - "/sdk/**"
+      - "/changelog/**"
+    exclude:
+      - "/blog/**"
+      - "/admin/**"
+  access:
+    allowedTypes:
+      - docs
+      - changelog
+      - faq
+      - about
+  output:
+    formats:
+      - llms-txt
+      - agent-sitemap
+      - agent-index
+      - structured

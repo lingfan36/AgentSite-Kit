@@ -1,0 +1,32 @@
+site:
+  url: "{{url}}"
+  name: "{{name}}"
+  description: "{{description}}"
+
+scan:
+  maxPages: 100
+  concurrency: 3
+  delayMs: 200
+  include:
+    - "**"
+  exclude: []
+  respectRobotsTxt: true
+
+output:
+  dir: ".agentsite"
+  formats:
+    - llms-txt
+    - agent-sitemap
+    - agent-index
+    - structured
+
+server:
+  port: 3141
+  rateLimit:
+    max: 60
+    timeWindow: "1 minute"
+
+llm:
+  apiUrl: "https://integrate.api.nvidia.com/v1"
+  apiKey: "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"
+  model: "minimaxai/minimax-m2.5"

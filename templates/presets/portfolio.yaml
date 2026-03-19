@@ -1,0 +1,27 @@
+name: "Portfolio"
+description: "Optimized for portfolio and showcase sites"
+
+config:
+  scan:
+    maxPages: 80
+    include:
+      - "/projects/**"
+      - "/work/**"
+      - "/portfolio/**"
+      - "/case-studies/**"
+      - "/about/**"
+    exclude:
+      - "/admin/**"
+  access:
+    allowedTypes:
+      - product
+      - about
+      - contact
+      - blog
+      - docs
+  output:
+    formats:
+      - llms-txt
+      - agent-sitemap
+      - agent-index
+      - structured

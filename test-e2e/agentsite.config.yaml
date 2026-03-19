@@ -1,0 +1,23 @@
+site:
+  url: https://docs.anthropic.com
+  name: Anthropic Docs Test
+  description: Test site for AgentSite Kit
+
+scan:
+  maxPages: 10
+  concurrency: 2
+  delayMs: 500
+
+output:
+  dir: .agentsite
+
+access:
+  allowedPages:
+    - '**'
+  blockedPages: []
+  allowedTypes:
+    - docs
+    - faq
+    - blog
+  summaryOnly: false
+  allowSearch: true

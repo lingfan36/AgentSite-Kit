@@ -1,0 +1,30 @@
+name: "SaaS Website"
+description: "Optimized for SaaS product websites with features, pricing, and FAQ"
+
+config:
+  scan:
+    maxPages: 100
+    include:
+      - "/**"
+    exclude:
+      - "/app/**"
+      - "/dashboard/**"
+      - "/admin/**"
+      - "/login/**"
+      - "/signup/**"
+  access:
+    allowedTypes:
+      - product
+      - pricing
+      - faq
+      - docs
+      - about
+      - contact
+      - changelog
+      - blog
+  output:
+    formats:
+      - llms-txt
+      - agent-sitemap
+      - agent-index
+      - structured

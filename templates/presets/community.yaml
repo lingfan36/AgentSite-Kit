@@ -1,0 +1,31 @@
+name: "Community / Forum"
+description: "Optimized for community forums and discussion sites"
+
+config:
+  scan:
+    maxPages: 150
+    include:
+      - "/forum/**"
+      - "/community/**"
+      - "/discussions/**"
+      - "/topics/**"
+      - "/faq/**"
+      - "/help/**"
+      - "/docs/**"
+    exclude:
+      - "/admin/**"
+      - "/settings/**"
+      - "/profile/**"
+  access:
+    allowedTypes:
+      - faq
+      - docs
+      - blog
+      - about
+      - contact
+  output:
+    formats:
+      - llms-txt
+      - agent-sitemap
+      - agent-index
+      - structured

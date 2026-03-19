@@ -1,0 +1,26 @@
+name: "Documentation Site"
+description: "Optimized for documentation sites with structured sections and guides"
+
+config:
+  scan:
+    maxPages: 200
+    include:
+      - "/docs/**"
+      - "/guide/**"
+      - "/reference/**"
+      - "/api/**"
+      - "/tutorial/**"
+    exclude:
+      - "/blog/**"
+      - "/changelog/**"
+  access:
+    allowedTypes:
+      - docs
+      - faq
+      - about
+  output:
+    formats:
+      - llms-txt
+      - agent-sitemap
+      - agent-index
+      - structured

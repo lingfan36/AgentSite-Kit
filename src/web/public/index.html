@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgentSite Kit Dashboard</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:system-ui,sans-serif;background:#f5f5f5;padding:20px}
+.container{max-width:1200px;margin:0 auto}
+.header{background:#fff;padding:20px;border-radius:8px;margin-bottom:20px;box-shadow:0 2px 4px rgba(0,0,0,0.1)}
+h1{font-size:24px;margin-bottom:5px}
+.subtitle{color:#666;font-size:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px;margin-bottom:20px}
+.card{background:#fff;padding:20px;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.1)}
+.card h2{font-size:16px;margin-bottom:10px;color:#333}
+.stat{font-size:32px;font-weight:bold;color:#0066cc}
+.table{background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 4px rgba(0,0,0,0.1)}
+table{width:100%;border-collapse:collapse}
+th,td{padding:12px;text-align:left;border-bottom:1px solid #eee}
+th{background:#f9f9f9;font-weight:600;font-size:14px}
+.badge{display:inline-block;padding:4px 8px;border-radius:4px;font-size:12px;font-weight:500}
+.badge-docs{background:#e3f2fd;color:#1976d2}
+.badge-faq{background:#f3e5f5;color:#7b1fa2}
+.badge-blog{background:#e8f5e9;color:#388e3c}
+.badge-product{background:#fff3e0;color:#f57c00}
+.badge-pricing{background:#fce4ec;color:#c2185b}
+.badge-changelog{background:#e0f2f1;color:#00796b}
+.badge-homepage{background:#f5f5f5;color:#616161}
+.btn{padding:8px 16px;border:none;border-radius:4px;cursor:pointer;font-size:14px;background:#0066cc;color:#fff}
+.btn:hover{background:#0052a3}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="header">
+<h1>AgentSite Kit Dashboard</h1>
+<p class="subtitle">Manage your Agent-friendly website layer</p>
+</div>
+<div class="grid">
+<div class="card">
+<h2>Total Pages</h2>
+<div class="stat" id="totalPages">-</div>
+</div>
+<div class="card">
+<h2>Last Scan</h2>
+<div class="stat" style="font-size:16px" id="lastScan">-</div>
+</div>
+<div class="card">
+<h2>Docs</h2>
+<div class="stat" id="docsCount">-</div>
+</div>
+<div class="card">
+<h2>FAQ</h2>
+<div class="stat" id="faqCount">-</div>
+</div>
+</div>
+<div class="table">
+<table>
+<thead>
+<tr>
+<th>Title</th>
+<th>Type</th>
+<th>URL</th>
+<th>Words</th>
+</tr>
+</thead>
+<tbody id="pagesList"></tbody>
+</table>
+</div>
+</div>
+<script>
+fetch('/api/pages-data').then(r=>r.json()).then(d=>{
+document.getElementById('totalPages').textContent=d.totalPages;
+document.getElementById('lastScan').textContent=new Date(d.scannedAt).toLocaleString();
+document.getElementById('docsCount').textContent=d.pages.filter(p=>p.type==='docs').length;
+document.getElementById('faqCount').textContent=d.pages.filter(p=>p.type==='faq').length;
+const tbody=document.getElementById('pagesList');
+d.pages.forEach(p=>{
+const tr=document.createElement('tr');
+tr.innerHTML=`<td>${p.title}</td><td><span class="badge badge-${p.type}">${p.type}</span></td><td style="font-size:12px;color:#666">${p.url}</td><td>${p.wordCount}</td>`;
+tbody.appendChild(tr);
+});
+});
+</script>
+</body>
+</html>

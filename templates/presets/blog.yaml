@@ -1,0 +1,26 @@
+name: "Blog"
+description: "Optimized for blog sites with articles, tags, and categories"
+
+config:
+  scan:
+    maxPages: 150
+    include:
+      - "/blog/**"
+      - "/posts/**"
+      - "/articles/**"
+      - "/category/**"
+      - "/tag/**"
+    exclude:
+      - "/admin/**"
+  access:
+    allowedTypes:
+      - blog
+      - faq
+      - about
+      - contact
+  output:
+    formats:
+      - llms-txt
+      - agent-sitemap
+      - agent-index
+      - structured

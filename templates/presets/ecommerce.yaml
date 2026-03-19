@@ -1,0 +1,32 @@
+name: "E-commerce"
+description: "Optimized for e-commerce sites with product catalogs and pricing"
+
+config:
+  scan:
+    maxPages: 200
+    include:
+      - "/products/**"
+      - "/shop/**"
+      - "/catalog/**"
+      - "/collections/**"
+      - "/pricing/**"
+      - "/faq/**"
+    exclude:
+      - "/cart/**"
+      - "/checkout/**"
+      - "/account/**"
+      - "/admin/**"
+  access:
+    allowedTypes:
+      - product
+      - pricing
+      - faq
+      - about
+      - contact
+      - docs
+  output:
+    formats:
+      - llms-txt
+      - agent-sitemap
+      - agent-index
+      - structured

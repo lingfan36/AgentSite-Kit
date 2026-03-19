@@ -1,0 +1,15 @@
+services:
+  agentsite:
+    build: .
+    container_name: agentsite-api
+    ports:
+      - "3141:3141"
+    volumes:
+      - ./agentsite.config.yaml:/app/agentsite.config.yaml:ro
+      - agentsite-data:/app/.agentsite
+    env_file:
+      - .env
+    restart: unless-stopped
+
+volumes:
+  agentsite-data:
