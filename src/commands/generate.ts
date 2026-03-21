@@ -1,9 +1,7 @@
 import { Command } from 'commander';
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 import { loadConfig } from '../config/loader.js';
-import { generateLlmsTxt } from '../generator/llms-txt.js';
-import { generateAgentSitemap } from '../generator/agent-sitemap.js';
-import { generateAgentIndex } from '../generator/agent-index.js';
+import { generateLlmsTxt, generateAgentSitemap, generateAgentIndex } from '../generator/static-generators.js';
 import { generateStructuredExports } from '../generator/structured-export.js';
 import { loadPlugins, runHook } from '../plugins/loader.js';
 import { log, spinner } from '../utils/logger.js';
