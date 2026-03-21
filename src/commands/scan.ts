@@ -40,10 +40,10 @@ export async function runScan(configOverride?: ReturnType<typeof loadConfig>): P
 
   // 2. Crawl
   const crawlSp = spinner('Crawling site...');
-  const crawled = await crawlSite(config, sitemapUrls, (url, i) => {
+  const { results: crawled, failed } = await crawlSite(config, sitemapUrls, (url, i) => {
     crawlSp.text = `Crawling (${i}/${config.scan.maxPages})... ${url}`;
   });
-  crawlSp.succeed(`Crawled ${crawled.length} pages`);
+  crawlSp.succeed(`Crawled ${crawled.length} pages${failed.length > 0 ? `, ${failed.length} failed` : ''}`);
 
   // 3. Extract & classify
   const extractSp = spinner('Extracting content...');

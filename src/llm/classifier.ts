@@ -1,7 +1,7 @@
 import { chatCompletion, type LlmConfig } from './client.js';
 import type { PageType } from '../types/page.js';
 
-const VALID_TYPES: PageType[] = ['homepage', 'docs', 'faq', 'blog', 'product', 'pricing', 'about', 'contact', 'unknown'];
+const VALID_TYPES: PageType[] = ['homepage', 'docs', 'faq', 'blog', 'product', 'pricing', 'about', 'contact', 'changelog', 'unknown'];
 
 export async function llmClassifyPage(
   config: LlmConfig,

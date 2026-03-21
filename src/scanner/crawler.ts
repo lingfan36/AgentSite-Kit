@@ -12,16 +12,22 @@ export interface CrawlResult {
   status: number;
 }
 
+export interface CrawlReport {
+  results: CrawlResult[];
+  failed: string[];
+}
+
 export async function crawlSite(
   config: ValidatedConfig,
   seedUrls: string[],
   onPage?: (url: string, index: number) => void,
-): Promise<CrawlResult[]> {
+): Promise<CrawlReport> {
   const { maxPages, concurrency, delayMs } = config.scan;
   const baseUrl = config.site.url;
   const visited = new Set<string>();
   const queue: string[] = [...seedUrls, baseUrl];
   const results: CrawlResult[] = [];
+  const failed: string[] = [];
   const limit = pLimit(concurrency);
   const cacheDir = `${config.output.dir}/cache/pages`;
   mkdirSync(cacheDir, { recursive: true });
@@ -67,7 +73,8 @@ export async function crawlSite(
           if (delayMs > 0) await delay(delayMs);
 
           return { url, html, status: res.status } as CrawlResult;
-        } catch {
+        } catch (err) {
+          failed.push(url);
           return null;
         }
       }),
@@ -79,5 +86,5 @@ export async function crawlSite(
     }
   }
 
-  return results;
+  return { results, failed };
 }

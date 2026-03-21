@@ -48,9 +48,10 @@ export const configSchema = z.object({
     accessLog: z.boolean().default(true),
   }).default({}),
   llm: z.object({
-    apiUrl: z.string().default('https://integrate.api.nvidia.com/v1'),
-    apiKey: z.string().default('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'),
-    model: z.string().default('minimaxai/minimax-m2.5'),
+    // Compatible with any OpenAI-compatible API (OpenAI, NVIDIA NIM, Together, etc.)
+    apiUrl: z.string().default('https://api.openai.com/v1'),
+    apiKey: z.string().default(''),
+    model: z.string().default('gpt-4o-mini'),
   }).optional(),
   access: accessSchema,
   plugins: z.array(z.string()).default([]),

@@ -31,13 +31,13 @@ export function registerUpdateCommand(program: Command) {
       const crawled = await crawlSite(config, sitemapUrls, (url, i) => {
         sp.text = `Scanning (${i})... ${url}`;
       });
-      sp.succeed(`Scanned ${crawled.length} pages`);
+      sp.succeed(`Scanned ${crawled.results.length} pages${crawled.failed.length > 0 ? `, ${crawled.failed.length} failed` : ''}`);
 
       // Build new pages & hashes
       const newHashes: Record<string, string> = {};
       const pages: ScannedPage[] = [];
 
-      for (const { url, html } of crawled) {
+      for (const { url, html } of crawled.results) {
         const content = extractContent(html, url);
         const contentHash = sha256(content.bodyText);
         newHashes[url] = contentHash;
@@ -69,20 +69,24 @@ export function registerUpdateCommand(program: Command) {
       }
 
       // Detect changes
-      const changed = findChangedUrls(oldHashes, newHashes);
-      if (changed.length === 0) {
+      const { changed, deleted } = findChangedUrls(oldHashes, newHashes);
+      if (changed.length === 0 && deleted.length === 0) {
         log.success('No changes detected. Everything is up to date.');
         return;
       }
 
+      if (deleted.length > 0) {
+        log.info(`${deleted.length} page(s) removed`);
+      }
       log.info(`${changed.length} page(s) changed`);
 
-      // Save updated scan result
+      // Save updated scan result (exclude deleted pages)
+      const deletedSet = new Set(deleted);
       const result: ScanResult = {
         siteUrl: config.site.url,
         scannedAt: new Date().toISOString(),
-        totalPages: pages.length,
-        pages,
+        totalPages: pages.filter(p => !deletedSet.has(p.url)).length,
+        pages: pages.filter(p => !deletedSet.has(p.url)),
       };
       writeFileSync(`${outDir}/scan-result.json`, JSON.stringify(result, null, 2), 'utf-8');
 
@@ -105,6 +109,6 @@ export function registerUpdateCommand(program: Command) {
       saveHashes(hashPath, newHashes);
 
       genSp.succeed('All files regenerated');
-      log.success(`Update complete. ${changed.length} page(s) updated.`);
+      log.success(`Update complete. ${changed.length} changed, ${deleted.length} removed.`);
     });
 }
