@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { readFileSync, existsSync } from 'node:fs';
 import type { ScanResult } from '../types/page.js';
 import type { DocEntry, FaqEntry, ProductEntry, ArticleEntry, PricingEntry, ChangelogEntry } from '../types/content.js';
-import { buildSearchIndex } from '../utils/search.js';
+import { buildSearchIndex, queryIndex } from '../utils/search.js';
 
 interface McpData {
   scanResult: ScanResult;
@@ -42,26 +42,10 @@ function registerTools(server: McpServer, data: McpData, searchIndex: Map<string
     { query: z.string().describe('Search keyword'), limit: z.number().optional().describe('Max results (default 10)') },
     async ({ query, limit }) => {
       const max = limit ?? 10;
-      const words = query.toLowerCase().split(/\W+/).filter((w) => w.length > 2);
-      const scoreMap = new Map<number, number>();
-
-      for (const word of words) {
-        const matches = searchIndex.get(word);
-        if (matches) {
-          for (const idx of matches) {
-            scoreMap.set(idx, (scoreMap.get(idx) ?? 0) + 1);
-          }
-        }
-      }
-
-      const sorted = [...scoreMap.entries()]
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, max)
-        .map(([idx]) => {
-          const p = data.scanResult.pages[idx];
-          return { url: p.url, title: p.title, type: p.type, summary: p.summary };
-        });
-
+      const sorted = queryIndex(searchIndex, query, max).map((idx) => {
+        const p = data.scanResult.pages[idx];
+        return { url: p.url, title: p.title, type: p.type, summary: p.summary };
+      });
       return { content: [{ type: 'text' as const, text: JSON.stringify(sorted, null, 2) }] };
     },
   );
@@ -215,28 +199,11 @@ function registerTools(server: McpServer, data: McpData, searchIndex: Map<string
     'Ask a natural language question about the site. Returns the most relevant pages and structured content as context for answering.',
     { question: z.string().describe('Your question about the site content') },
     async ({ question }) => {
-      const q = question.toLowerCase();
-      const words = q.split(/\W+/).filter((w) => w.length > 2);
-
-      // Score pages by relevance
-      const pageScores = new Map<number, number>();
-      for (const word of words) {
-        const matches = searchIndex.get(word);
-        if (matches) {
-          for (const idx of matches) {
-            pageScores.set(idx, (pageScores.get(idx) ?? 0) + 1);
-          }
-        }
-      }
-
-      const topPages = [...pageScores.entries()]
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 5)
-        .map(([idx]) => data.scanResult.pages[idx]);
+      const topPages = queryIndex(searchIndex, question, 5).map((idx) => data.scanResult.pages[idx]);
 
       // Also search structured data (faq, docs, products, articles)
-      const matchEntry = (text: string) =>
-        words.some(w => text.toLowerCase().includes(w));
+      const words = question.toLowerCase().split(/\W+/).filter((w) => w.length > 2);
+      const matchEntry = (text: string) => words.some(w => text.toLowerCase().includes(w));
 
       const relatedFaq = data.faq.filter(f => matchEntry(f.question) || matchEntry(f.answer)).slice(0, 3);
       const relatedDocs = data.docs.filter(d => matchEntry(d.title) || matchEntry(d.summary)).slice(0, 3);

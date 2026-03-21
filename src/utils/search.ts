@@ -12,3 +12,24 @@ export function buildSearchIndex(pages: ScannedPage[]): Map<string, Set<number>>
   });
   return index;
 }
+
+export function queryIndex(
+  searchIndex: Map<string, Set<number>>,
+  query: string,
+  limit: number,
+): number[] {
+  const words = query.toLowerCase().split(/\W+/).filter((w) => w.length > 2);
+  const scoreMap = new Map<number, number>();
+  for (const word of words) {
+    const matches = searchIndex.get(word);
+    if (matches) {
+      for (const idx of matches) {
+        scoreMap.set(idx, (scoreMap.get(idx) ?? 0) + 1);
+      }
+    }
+  }
+  return [...scoreMap.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, limit)
+    .map(([idx]) => idx);
+}
