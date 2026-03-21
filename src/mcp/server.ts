@@ -2,8 +2,9 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
 import { readFileSync, existsSync } from 'node:fs';
-import type { ScanResult, ScannedPage } from '../types/page.js';
+import type { ScanResult } from '../types/page.js';
 import type { DocEntry, FaqEntry, ProductEntry, ArticleEntry, PricingEntry, ChangelogEntry } from '../types/content.js';
+import { buildSearchIndex } from '../utils/search.js';
 
 interface McpData {
   scanResult: ScanResult;
@@ -32,19 +33,6 @@ function loadData(outDir: string): McpData {
     pricing: loadJson<PricingEntry>(`${outDir}/data/pricing.json`),
     changelog: loadJson<ChangelogEntry>(`${outDir}/data/changelog.json`),
   };
-}
-
-function buildSearchIndex(pages: ScannedPage[]): Map<string, Set<number>> {
-  const index = new Map<string, Set<number>>();
-  pages.forEach((page, i) => {
-    const text = `${page.title} ${page.summary} ${page.type}`.toLowerCase();
-    const words = text.split(/\W+/).filter((w) => w.length > 2);
-    for (const word of words) {
-      if (!index.has(word)) index.set(word, new Set());
-      index.get(word)!.add(i);
-    }
-  });
-  return index;
 }
 
 function registerTools(server: McpServer, data: McpData, searchIndex: Map<string, Set<number>>, outDir: string) {

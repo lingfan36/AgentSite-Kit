@@ -9,6 +9,7 @@ import { AccessLogger } from './access-log.js';
 import { registerSearchRoute } from './routes/search.js';
 import { registerPagesRoute } from './routes/pages.js';
 import { registerContentRoutes } from './routes/content-routes.js';
+import { buildSearchIndex } from '../utils/search.js';
 
 export interface ServerData {
   docs: unknown[];
@@ -41,7 +42,7 @@ export async function createApp(config: ValidatedConfig, data: ServerData) {
   const filteredData = { ...data, pages: filteredPages };
 
   // Build simple inverted index for search
-  const searchIndex = buildSearchIndex(filteredData);
+  const searchIndex = buildSearchIndex(filteredData.pages);
 
   app.get('/api/health', async () => ({ ok: true }));
 
@@ -161,18 +162,3 @@ export async function createApp(config: ValidatedConfig, data: ServerData) {
 }
 
 export type SearchIndex = Map<string, Set<number>>;
-
-function buildSearchIndex(data: ServerData): SearchIndex {
-  const index = new Map<string, Set<number>>();
-
-  data.pages.forEach((page, i) => {
-    const text = `${page.title} ${page.summary} ${page.type}`.toLowerCase();
-    const words = text.split(/\W+/).filter((w) => w.length > 2);
-    for (const word of words) {
-      if (!index.has(word)) index.set(word, new Set());
-      index.get(word)!.add(i);
-    }
-  });
-
-  return index;
-}
