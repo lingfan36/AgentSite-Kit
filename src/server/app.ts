@@ -158,6 +158,31 @@ export async function createApp(config: ValidatedConfig, data: ServerData) {
     }
   });
 
+  // Webhook endpoint — triggers incremental update
+  // Body: { secret: string, urls?: string[] }
+  // Set AGENTSITE_WEBHOOK_SECRET env var to enable
+  app.post<{ Body: { secret?: string; urls?: string[] } }>('/api/webhook', async (req, reply) => {
+    const expectedSecret = process.env.AGENTSITE_WEBHOOK_SECRET;
+    if (!expectedSecret) {
+      reply.code(501);
+      return { ok: false, error: 'Webhook not configured. Set AGENTSITE_WEBHOOK_SECRET env var.' };
+    }
+    if (req.body?.secret !== expectedSecret) {
+      reply.code(401);
+      return { ok: false, error: 'Invalid webhook secret.' };
+    }
+    // Fire-and-forget async update
+    setImmediate(async () => {
+      try {
+        const { runScan } = await import('../commands/scan.js');
+        const { runGenerate } = await import('../commands/generate.js');
+        await runScan();
+        await runGenerate();
+      } catch { /* errors logged inside commands */ }
+    });
+    return { ok: true, message: 'Update triggered.' };
+  });
+
   return app;
 }
 

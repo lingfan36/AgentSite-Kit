@@ -57,16 +57,31 @@ export async function runGenerate(configOverride?: ReturnType<typeof loadConfig>
 
   sp.succeed(`Generated ${count} files`);
 
-  log.info(`Output directory: ${outDir}/`);
-  log.info(`  llms.txt (${llmsTxt.length} bytes)`);
-  log.info(`  agent-sitemap.json (${scanResult.totalPages} pages)`);
+  // Quality report
+  const unknownPages = scanResult.pages.filter(p => p.type === 'unknown').length;
+  const spaPages = scanResult.pages.filter(p => p.isSpa).length;
+  const emptySummaryPages = scanResult.pages.filter(p => !p.summary || p.summary.length < 20).length;
+  const totalStructured = docs.length + faq.length + products.length + articles.length + pricing.length + changelog.length;
+
+  log.info('─'.repeat(40));
+  log.info('Generated files:');
+  log.info(`  llms.txt           ${llmsTxt.length} bytes`);
+  log.info(`  agent-sitemap.json ${scanResult.totalPages} pages`);
   log.info(`  agent-index.json`);
-  log.info(`  data/docs.json (${docs.length} entries)`);
-  log.info(`  data/faq.json (${faq.length} entries)`);
-  log.info(`  data/products.json (${products.length} entries)`);
-  log.info(`  data/articles.json (${articles.length} entries)`);
-  log.info(`  data/pricing.json (${pricing.length} entries)`);
-  log.info(`  data/changelog.json (${changelog.length} entries)`);
+  log.info(`  data/docs.json     ${docs.length} entries`);
+  log.info(`  data/faq.json      ${faq.length} entries`);
+  log.info(`  data/products.json ${products.length} entries`);
+  log.info(`  data/articles.json ${articles.length} entries`);
+  log.info(`  data/pricing.json  ${pricing.length} entries`);
+  log.info(`  data/changelog.json ${changelog.length} entries`);
+  log.info('─'.repeat(40));
+  log.info(`Quality check:`);
+  log.info(`  Structured entries: ${totalStructured} / ${scanResult.totalPages} pages`);
+  if (unknownPages > 0) log.info(`  ⚠ Unclassified pages: ${unknownPages} (type=unknown)`);
+  if (spaPages > 0) log.info(`  ⚠ SPA pages (may lack content): ${spaPages}`);
+  if (emptySummaryPages > 0) log.info(`  ⚠ Poor summaries: ${emptySummaryPages}`);
+  if (unknownPages === 0 && spaPages === 0 && emptySummaryPages === 0) log.success('  ✓ All checks passed');
+  log.info('─'.repeat(40));
 }
 
 export function registerGenerateCommand(program: Command) {

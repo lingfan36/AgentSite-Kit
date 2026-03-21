@@ -113,17 +113,40 @@ export async function runScan(configOverride?: ReturnType<typeof loadConfig>): P
   };
 
   writeFileSync(`${outDir}/scan-result.json`, JSON.stringify(result, null, 2), 'utf-8');
-  log.success(`Scan result saved to ${outDir}/scan-result.json`);
 
-  // Stats
+  // Scan report
   const typeCounts = new Map<string, number>();
+  let spaCount = 0;
+  let emptySummary = 0;
+  let totalWords = 0;
   for (const p of pages) {
     typeCounts.set(p.type, (typeCounts.get(p.type) ?? 0) + 1);
+    if (p.isSpa) spaCount++;
+    if (!p.summary || p.summary.length < 20) emptySummary++;
+    totalWords += p.wordCount;
   }
+  const avgWords = pages.length > 0 ? Math.round(totalWords / pages.length) : 0;
+
+  log.success(`✓ Scan complete: ${pages.length} pages, ${failed.length} failed`);
+  log.info('─'.repeat(40));
   log.info('Page types:');
-  for (const [type, count] of typeCounts) {
-    console.log(`  ${type}: ${count}`);
+  for (const [type, count] of [...typeCounts.entries()].sort((a, b) => b[1] - a[1])) {
+    console.log(`  ${type.padEnd(12)}: ${count}`);
   }
+  if (spaCount > 0) {
+    log.info(`⚠ SPA pages detected: ${spaCount} (content may be incomplete — consider using Playwright)`);
+  }
+  if (emptySummary > 0) {
+    log.info(`⚠ Pages with poor summary: ${emptySummary}`);
+  }
+  log.info(`Avg words/page: ${avgWords}`);
+  if (failed.length > 0) {
+    log.info(`Failed URLs:`);
+    for (const u of failed.slice(0, 5)) console.log(`  ${u}`);
+    if (failed.length > 5) console.log(`  ... and ${failed.length - 5} more`);
+  }
+  log.info('─'.repeat(40));
+  log.success(`Output: ${outDir}/scan-result.json`);
 
   return result;
 }

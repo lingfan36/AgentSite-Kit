@@ -208,6 +208,51 @@ function registerTools(server: McpServer, data: McpData, searchIndex: Map<string
       return { content: [{ type: 'text' as const, text: JSON.stringify(overview, null, 2) }] };
     },
   );
+
+  // Tool: ask — natural language question, returns assembled context
+  server.tool(
+    'ask',
+    'Ask a natural language question about the site. Returns the most relevant pages and structured content as context for answering.',
+    { question: z.string().describe('Your question about the site content') },
+    async ({ question }) => {
+      const q = question.toLowerCase();
+      const words = q.split(/\W+/).filter((w) => w.length > 2);
+
+      // Score pages by relevance
+      const pageScores = new Map<number, number>();
+      for (const word of words) {
+        const matches = searchIndex.get(word);
+        if (matches) {
+          for (const idx of matches) {
+            pageScores.set(idx, (pageScores.get(idx) ?? 0) + 1);
+          }
+        }
+      }
+
+      const topPages = [...pageScores.entries()]
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5)
+        .map(([idx]) => data.scanResult.pages[idx]);
+
+      // Also search structured data (faq, docs, products, articles)
+      const matchEntry = (text: string) =>
+        words.some(w => text.toLowerCase().includes(w));
+
+      const relatedFaq = data.faq.filter(f => matchEntry(f.question) || matchEntry(f.answer)).slice(0, 3);
+      const relatedDocs = data.docs.filter(d => matchEntry(d.title) || matchEntry(d.summary)).slice(0, 3);
+      const relatedProducts = data.products.filter(p => matchEntry(p.product_name) || matchEntry(p.description)).slice(0, 2);
+
+      const result = {
+        question,
+        pages: topPages.map(p => ({ url: p.url, title: p.title, type: p.type, summary: p.summary })),
+        faq: relatedFaq,
+        docs: relatedDocs,
+        products: relatedProducts,
+      };
+
+      return { content: [{ type: 'text' as const, text: JSON.stringify(result, null, 2) }] };
+    },
+  );
 }
 
 function registerResources(server: McpServer, outDir: string) {
