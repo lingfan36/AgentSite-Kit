@@ -1,6 +1,6 @@
 import type { ScannedPage, PageType } from '../types/page.js';
 
-export interface ExtractedContent {
+export interface PluginExtractedContent {
   title: string;
   summary: string;
   headings: string[];
@@ -16,5 +16,5 @@ export interface AgentSitePlugin {
     beforeGenerate?(scanResult: unknown): Promise<void>;
     afterGenerate?(outDir: string): Promise<void>;
   };
-  extractors?: Partial<Record<PageType, (html: string, url: string) => Partial<ExtractedContent>>>;
+  extractors?: Partial<Record<PageType, (html: string, url: string) => Partial<PluginExtractedContent>>>;
 }
