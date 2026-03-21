@@ -1,20 +1,45 @@
 {
   "name": "agentsite-kit",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "CLI toolkit to make any website Agent-friendly",
   "type": "module",
   "bin": {
-    "agentsite": "./bin/agentsite.js"
+    "agentsite": "bin/agentsite.js"
   },
+  "files": [
+    "dist",
+    "bin",
+    "templates"
+  ],
   "scripts": {
     "build": "tsup",
-    "dev": "tsx src/index.ts"
+    "dev": "tsx src/index.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prepublishOnly": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lingfan36/AgentSite-Kit.git"
+  },
+  "homepage": "https://github.com/lingfan36/AgentSite-Kit",
+  "bugs": {
+    "url": "https://github.com/lingfan36/AgentSite-Kit/issues"
+  },
+  "engines": {
+    "node": ">=18"
   },
   "keywords": [
     "agent",
     "llm",
+    "ai",
     "sitemap",
-    "cli"
+    "cli",
+    "web-scraper",
+    "structured-data",
+    "mcp",
+    "llms-txt",
+    "agent-friendly"
   ],
   "license": "MIT",
   "dependencies": {
@@ -38,6 +63,7 @@
     "@types/node": "^22.0.0",
     "tsup": "^8.2.0",
     "tsx": "^4.19.0",
-    "typescript": "^5.6.0"
+    "typescript": "^5.6.0",
+    "vitest": "^4.1.0"
   }
 }
