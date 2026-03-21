@@ -8,12 +8,7 @@ import { dashboardHtml } from '../web/dashboard.js';
 import { AccessLogger } from './access-log.js';
 import { registerSearchRoute } from './routes/search.js';
 import { registerPagesRoute } from './routes/pages.js';
-import { registerFaqRoute } from './routes/faq.js';
-import { registerProductsRoute } from './routes/products.js';
-import { registerDocsRoute } from './routes/docs.js';
-import { registerArticlesRoute } from './routes/articles.js';
-import { registerPricingRoute } from './routes/pricing.js';
-import { registerChangelogRoute } from './routes/changelog.js';
+import { registerContentRoutes } from './routes/content-routes.js';
 
 export interface ServerData {
   docs: unknown[];
@@ -139,12 +134,7 @@ export async function createApp(config: ValidatedConfig, data: ServerData) {
     registerSearchRoute(app, filteredData, searchIndex);
   }
   registerPagesRoute(app, filteredData, config);
-  registerFaqRoute(app, filteredData);
-  registerProductsRoute(app, filteredData);
-  registerDocsRoute(app, filteredData);
-  registerArticlesRoute(app, filteredData);
-  registerPricingRoute(app, filteredData);
-  registerChangelogRoute(app, filteredData);
+  registerContentRoutes(app, filteredData);
 
   // Operation endpoints (rescan / regenerate)
   app.post('/api/rescan', async () => {
