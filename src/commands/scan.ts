@@ -77,7 +77,7 @@ export async function runScan(configOverride?: ReturnType<typeof loadConfig>): P
     let summary = content.summary;
     if (llmConfig) {
       try {
-        summary = await llmSummarize(llmConfig, content.title, content.bodyText);
+        summary = await llmSummarize(llmConfig, content.title, content.bodyText, pageType);
       } catch { /* keep rule-based summary */ }
     }
 
@@ -96,6 +96,7 @@ export async function runScan(configOverride?: ReturnType<typeof loadConfig>): P
       author: content.author,
       publishedAt: content.publishedAt,
       updatedAt: content.lastModified,
+      isSpa: content.isSpa,
     });
   }
   extractSp.succeed(`Extracted content from ${pages.length} pages`);

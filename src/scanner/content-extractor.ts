@@ -14,9 +14,33 @@ export interface ExtractedContent {
   version?: string;
   author?: string;
   publishedAt?: string;
+  isSpa?: boolean;
 }
 
-const REMOVE_SELECTORS = 'nav, footer, header, aside, .sidebar, .nav, .footer, .header, script, style, noscript, iframe, svg';
+const REMOVE_SELECTORS = 'nav, footer, header, aside, .sidebar, .nav, .footer, .header, script, style, noscript, iframe, svg, button, input, label, select, textarea, form';
+
+function extractJsonLd($: ReturnType<typeof cheerio.load>): Record<string, unknown> | null {
+  try {
+    const raw = $('script[type="application/ld+json"]').first().html();
+    if (!raw) return null;
+    const data = JSON.parse(raw);
+    return Array.isArray(data) ? data[0] : data;
+  } catch {
+    return null;
+  }
+}
+
+function extractFirstParagraph($: ReturnType<typeof cheerio.load>): string {
+  let text = '';
+  $('article p, main p, .content p, .post-content p, p').each((_, el) => {
+    const t = $(el).text().trim();
+    if (t.length > 40) {
+      text = t;
+      return false; // break
+    }
+  });
+  return text;
+}
 
 export function extractContent(html: string, url: string): ExtractedContent {
   const $ = cheerio.load(html);
@@ -56,6 +80,9 @@ export function extractContent(html: string, url: string): ExtractedContent {
     if (tag) tags.push(tag);
   });
 
+  // JSON-LD structured data
+  const jsonLd = extractJsonLd($);
+
   // Remove non-content elements
   $(REMOVE_SELECTORS).remove();
 
@@ -70,39 +97,63 @@ export function extractContent(html: string, url: string): ExtractedContent {
   const bodyText = $('body').text().replace(/\s+/g, ' ').trim();
   const wordCount = bodyText.split(/\s+/).filter(Boolean).length;
 
+  // SPA detection: very little content + known SPA root divs
+  const isSpa = wordCount < 50 && (
+    html.includes('<div id="root">') ||
+    html.includes('<div id="app">') ||
+    html.includes('data-reactroot') ||
+    html.includes('__NEXT_DATA__')
+  );
+
   const version =
     $('meta[name="version"]').attr('content') ||
+    (jsonLd?.version as string | undefined) ||
     bodyText.match(/v?\d+\.\d+\.\d+/)?.[0] ||
     undefined;
 
   // Extract FAQ items
   const faqItems: { question: string; answer: string }[] = [];
 
+  // JSON-LD FAQ
+  if (jsonLd?.['@type'] === 'FAQPage' && Array.isArray(jsonLd.mainEntity)) {
+    for (const item of jsonLd.mainEntity as Record<string, unknown>[]) {
+      const q = item.name as string;
+      const a = (item.acceptedAnswer as Record<string, unknown>)?.text as string;
+      if (q && a) faqItems.push({ question: q, answer: a });
+    }
+  }
+
   // Pattern 1: details/summary
-  $('details').each((_, el) => {
-    const q = $(el).find('summary').text().trim();
-    const a = $(el).clone().find('summary').remove().end().text().trim();
-    if (q && a) faqItems.push({ question: q, answer: a });
-  });
+  if (faqItems.length === 0) {
+    $('details').each((_, el) => {
+      const q = $(el).find('summary').text().trim();
+      const a = $(el).clone().find('summary').remove().end().text().trim();
+      if (q && a) faqItems.push({ question: q, answer: a });
+    });
+  }
 
   // Pattern 2: dt/dd
-  $('dt').each((_, el) => {
-    const q = $(el).text().trim();
-    const a = $(el).next('dd').text().trim();
-    if (q && a) faqItems.push({ question: q, answer: a });
-  });
+  if (faqItems.length === 0) {
+    $('dt').each((_, el) => {
+      const q = $(el).text().trim();
+      const a = $(el).next('dd').text().trim();
+      if (q && a) faqItems.push({ question: q, answer: a });
+    });
+  }
 
-  // Extract features (list items in product-like pages)
+  // Extract features (list items)
   const features: string[] = [];
   $('ul li, ol li').each((_, el) => {
     const text = $(el).text().trim();
     if (text.length > 10 && text.length < 200) features.push(text);
   });
 
-  // Summary: meta description or first 200 chars
+  // Summary: priority order
   const summary =
     $('meta[name="description"]').attr('content')?.trim() ||
     $('meta[property="og:description"]').attr('content')?.trim() ||
+    (jsonLd?.description as string | undefined) ||
+    extractFirstParagraph($) ||
     bodyText.slice(0, 200);
 
   return {
@@ -119,5 +170,6 @@ export function extractContent(html: string, url: string): ExtractedContent {
     version,
     author,
     publishedAt,
+    isSpa,
   };
 }

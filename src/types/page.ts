@@ -15,6 +15,7 @@ export interface ScannedPage {
   author?: string;
   publishedAt?: string;
   updatedAt?: string;
+  isSpa?: boolean;
 }
 
 export interface ScanResult {
