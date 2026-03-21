@@ -47,16 +47,7 @@ function buildSearchIndex(pages: ScannedPage[]): Map<string, Set<number>> {
   return index;
 }
 
-export async function startMcpServer(outDir: string) {
-  const data = loadData(outDir);
-  const searchIndex = buildSearchIndex(data.scanResult.pages);
-
-  const server = new McpServer({
-    name: 'agentsite',
-    version: '1.0.0',
-  });
-
-  // Tool: search
+function registerTools(server: McpServer, data: McpData, searchIndex: Map<string, Set<number>>, outDir: string) {
   server.tool(
     'search',
     'Search site content by keyword',
@@ -87,7 +78,6 @@ export async function startMcpServer(outDir: string) {
     },
   );
 
-  // Tool: get_page
   server.tool(
     'get_page',
     'Get detailed info about a specific page by URL',
@@ -101,7 +91,6 @@ export async function startMcpServer(outDir: string) {
     },
   );
 
-  // Tool: list_pages
   server.tool(
     'list_pages',
     'List all pages with optional type filter',
@@ -116,7 +105,6 @@ export async function startMcpServer(outDir: string) {
     },
   );
 
-  // Tool: list_faq
   server.tool(
     'list_faq',
     'List FAQ entries with optional category filter',
@@ -130,7 +118,6 @@ export async function startMcpServer(outDir: string) {
     },
   );
 
-  // Tool: list_docs
   server.tool(
     'list_docs',
     'List documentation entries with optional section filter',
@@ -144,7 +131,6 @@ export async function startMcpServer(outDir: string) {
     },
   );
 
-  // Tool: list_products
   server.tool(
     'list_products',
     'List all product entries',
@@ -154,7 +140,6 @@ export async function startMcpServer(outDir: string) {
     },
   );
 
-  // Tool: list_articles
   server.tool(
     'list_articles',
     'List blog/article entries with optional tag filter',
@@ -168,7 +153,6 @@ export async function startMcpServer(outDir: string) {
     },
   );
 
-  // Tool: list_pricing
   server.tool(
     'list_pricing',
     'List pricing/plan entries',
@@ -178,7 +162,6 @@ export async function startMcpServer(outDir: string) {
     },
   );
 
-  // Tool: list_changelog
   server.tool(
     'list_changelog',
     'List changelog/release entries',
@@ -192,7 +175,6 @@ export async function startMcpServer(outDir: string) {
     },
   );
 
-  // Tool: get_config
   server.tool(
     'get_config',
     'Get site configuration summary (API keys hidden)',
@@ -204,7 +186,6 @@ export async function startMcpServer(outDir: string) {
         const yaml = await import('js-yaml');
         const raw = readFileSync(configPath, 'utf-8');
         const parsed = yaml.load(raw) as Record<string, unknown>;
-        // Sanitize
         if (parsed.llm && typeof parsed.llm === 'object') {
           (parsed.llm as Record<string, unknown>).apiKey = '***';
         }
@@ -214,7 +195,6 @@ export async function startMcpServer(outDir: string) {
     },
   );
 
-  // Tool: site_overview
   server.tool(
     'site_overview',
     'Get a high-level overview of the site: name, description, page counts by type',
@@ -240,8 +220,9 @@ export async function startMcpServer(outDir: string) {
       return { content: [{ type: 'text' as const, text: JSON.stringify(overview, null, 2) }] };
     },
   );
+}
 
-  // Resource: llms.txt
+function registerResources(server: McpServer, outDir: string) {
   const llmsPath = `${outDir}/llms.txt`;
   if (existsSync(llmsPath)) {
     server.resource(
@@ -254,7 +235,6 @@ export async function startMcpServer(outDir: string) {
     );
   }
 
-  // Resource: agent-index.json
   const indexPath = `${outDir}/agent-index.json`;
   if (existsSync(indexPath)) {
     server.resource(
@@ -267,7 +247,6 @@ export async function startMcpServer(outDir: string) {
     );
   }
 
-  // Resource: agent-sitemap.json
   const sitemapPath = `${outDir}/agent-sitemap.json`;
   if (existsSync(sitemapPath)) {
     server.resource(
@@ -280,7 +259,6 @@ export async function startMcpServer(outDir: string) {
     );
   }
 
-  // Resource: data/*.json files
   const dataFiles = ['docs', 'faq', 'products', 'articles', 'pricing', 'changelog'];
   for (const name of dataFiles) {
     const dataPath = `${outDir}/data/${name}.json`;
@@ -295,6 +273,19 @@ export async function startMcpServer(outDir: string) {
       );
     }
   }
+}
+
+export async function startMcpServer(outDir: string) {
+  const data = loadData(outDir);
+  const searchIndex = buildSearchIndex(data.scanResult.pages);
+
+  const server = new McpServer({
+    name: 'agentsite',
+    version: '1.0.0',
+  });
+
+  registerTools(server, data, searchIndex, outDir);
+  registerResources(server, outDir);
 
   const transport = new StdioServerTransport();
   await server.connect(transport);
