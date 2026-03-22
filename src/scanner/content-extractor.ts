@@ -42,6 +42,51 @@ function extractFirstParagraph($: ReturnType<typeof cheerio.load>): string {
   return text;
 }
 
+function extractFaqItems(
+  $: ReturnType<typeof cheerio.load>,
+  jsonLd: Record<string, unknown> | null,
+): { question: string; answer: string }[] {
+  const items: { question: string; answer: string }[] = [];
+
+  // JSON-LD FAQ
+  if (jsonLd?.['@type'] === 'FAQPage' && Array.isArray(jsonLd.mainEntity)) {
+    for (const item of jsonLd.mainEntity as Record<string, unknown>[]) {
+      const q = item.name as string;
+      const a = (item.acceptedAnswer as Record<string, unknown>)?.text as string;
+      if (q && a) items.push({ question: q, answer: a });
+    }
+  }
+
+  // Pattern 1: details/summary
+  if (items.length === 0) {
+    $('details').each((_, el) => {
+      const q = $(el).find('summary').text().trim();
+      const a = $(el).clone().find('summary').remove().end().text().trim();
+      if (q && a) items.push({ question: q, answer: a });
+    });
+  }
+
+  // Pattern 2: dt/dd
+  if (items.length === 0) {
+    $('dt').each((_, el) => {
+      const q = $(el).text().trim();
+      const a = $(el).next('dd').text().trim();
+      if (q && a) items.push({ question: q, answer: a });
+    });
+  }
+
+  return items;
+}
+
+function extractFeatures($: ReturnType<typeof cheerio.load>): string[] {
+  const features: string[] = [];
+  $('ul li, ol li').each((_, el) => {
+    const text = $(el).text().trim();
+    if (text.length > 10 && text.length < 200) features.push(text);
+  });
+  return features;
+}
+
 export function extractContent(html: string, url: string): ExtractedContent {
   const $ = cheerio.load(html);
 
@@ -111,42 +156,8 @@ export function extractContent(html: string, url: string): ExtractedContent {
     bodyText.match(/v?\d+\.\d+\.\d+/)?.[0] ||
     undefined;
 
-  // Extract FAQ items
-  const faqItems: { question: string; answer: string }[] = [];
-
-  // JSON-LD FAQ
-  if (jsonLd?.['@type'] === 'FAQPage' && Array.isArray(jsonLd.mainEntity)) {
-    for (const item of jsonLd.mainEntity as Record<string, unknown>[]) {
-      const q = item.name as string;
-      const a = (item.acceptedAnswer as Record<string, unknown>)?.text as string;
-      if (q && a) faqItems.push({ question: q, answer: a });
-    }
-  }
-
-  // Pattern 1: details/summary
-  if (faqItems.length === 0) {
-    $('details').each((_, el) => {
-      const q = $(el).find('summary').text().trim();
-      const a = $(el).clone().find('summary').remove().end().text().trim();
-      if (q && a) faqItems.push({ question: q, answer: a });
-    });
-  }
-
-  // Pattern 2: dt/dd
-  if (faqItems.length === 0) {
-    $('dt').each((_, el) => {
-      const q = $(el).text().trim();
-      const a = $(el).next('dd').text().trim();
-      if (q && a) faqItems.push({ question: q, answer: a });
-    });
-  }
-
-  // Extract features (list items)
-  const features: string[] = [];
-  $('ul li, ol li').each((_, el) => {
-    const text = $(el).text().trim();
-    if (text.length > 10 && text.length < 200) features.push(text);
-  });
+  const faqItems = extractFaqItems($, jsonLd);
+  const features = extractFeatures($);
 
   // Summary: priority order
   const summary =
