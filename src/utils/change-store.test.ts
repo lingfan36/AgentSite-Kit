@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { findChangedUrls } from './store.js';
+import { findChangedUrls } from './change-store.js';
 
 describe('findChangedUrls', () => {
   it('detects new pages as changed', () => {

@@ -3,7 +3,7 @@ import { writeFileSync, mkdirSync } from 'node:fs';
 import { loadConfig } from '../config/loader.js';
 import { runScan } from './scan.js';
 import { runGenerate } from './generate.js';
-import { loadHashes, saveHashes, findChangedUrls } from '../change-detection/store.js';
+import { loadHashes, saveHashes, findChangedUrls } from '../utils/change-store.js';
 import { log } from '../utils/logger.js';
 import type { ScanResult } from '../types/page.js';
 
