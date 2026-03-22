@@ -7,7 +7,6 @@ import { isPageAllowed } from '../utils/access-control.js';
 import { dashboardHtml } from '../web/dashboard.js';
 import { AccessLogger } from './access-log.js';
 import { registerSearchRoute } from './routes/search.js';
-import { registerPagesRoute } from './routes/pages.js';
 import { registerContentRoutes } from './routes/content-routes.js';
 import { buildSearchIndex } from '../utils/search.js';
 
@@ -134,8 +133,7 @@ export async function createApp(config: ValidatedConfig, data: ServerData) {
   if (config.access.allowSearch) {
     registerSearchRoute(app, filteredData, searchIndex);
   }
-  registerPagesRoute(app, filteredData, config);
-  registerContentRoutes(app, filteredData);
+  registerContentRoutes(app, filteredData, config);
 
   // Operation endpoints (rescan / regenerate)
   app.post('/api/rescan', async () => {
