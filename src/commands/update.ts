@@ -1,16 +1,12 @@
 import { Command } from 'commander';
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
+import { writeFileSync, mkdirSync } from 'node:fs';
 import { loadConfig } from '../config/loader.js';
-import { crawlSite } from '../scanner/crawler.js';
-import { parseSitemap } from '../scanner/sitemap-parser.js';
-import { classifyPage } from '../scanner/page-classifier.js';
-import { extractContent } from '../scanner/content-extractor.js';
-import { sha256 } from '../utils/hash.js';
+import { runScan } from './scan.js';
 import { loadHashes, saveHashes, findChangedUrls } from '../change-detection/store.js';
 import { generateLlmsTxt, generateAgentSitemap, generateAgentIndex } from '../generator/static-generators.js';
 import { generateStructuredExports } from '../generator/structured-export.js';
 import { log, spinner } from '../utils/logger.js';
-import type { ScannedPage, ScanResult } from '../types/page.js';
+import type { ScanResult } from '../types/page.js';
 
 export function registerUpdateCommand(program: Command) {
   program
@@ -20,52 +16,17 @@ export function registerUpdateCommand(program: Command) {
       const config = loadConfig();
       const outDir = config.output.dir;
       const hashPath = `${outDir}/cache/hashes.json`;
-      mkdirSync(`${outDir}/cache/pages`, { recursive: true });
-      mkdirSync(`${outDir}/data`, { recursive: true });
+      mkdirSync(`${outDir}/cache`, { recursive: true });
 
       const oldHashes = loadHashes(hashPath);
 
-      // Re-scan
-      const sp = spinner('Re-scanning site...');
-      const sitemapUrls = await parseSitemap(config.site.url);
-      const crawled = await crawlSite(config, sitemapUrls, (url, i) => {
-        sp.text = `Scanning (${i})... ${url}`;
-      });
-      sp.succeed(`Scanned ${crawled.results.length} pages${crawled.failed.length > 0 ? `, ${crawled.failed.length} failed` : ''}`);
+      // Re-scan using the shared scan pipeline
+      const result = await runScan(config);
 
-      // Build new pages & hashes
+      // Build new hashes from scan result
       const newHashes: Record<string, string> = {};
-      const pages: ScannedPage[] = [];
-
-      for (const { url, html } of crawled.results) {
-        const content = extractContent(html, url);
-        const contentHash = sha256(content.bodyText);
-        newHashes[url] = contentHash;
-
-        const pageType = classifyPage({
-          url,
-          title: content.title,
-          metaOgType: content.metaOgType,
-          headings: content.headings,
-          bodyText: content.bodyText,
-        });
-
-        pages.push({
-          url,
-          title: content.title,
-          type: pageType,
-          contentHash,
-          summary: content.summary,
-          headings: content.headings,
-          lastModified: content.lastModified,
-          scannedAt: new Date().toISOString(),
-          wordCount: content.wordCount,
-          tags: content.tags,
-          version: content.version,
-          author: content.author,
-          publishedAt: content.publishedAt,
-          updatedAt: content.lastModified,
-        });
+      for (const p of result.pages) {
+        newHashes[p.url] = p.contentHash;
       }
 
       // Detect changes
@@ -82,22 +43,22 @@ export function registerUpdateCommand(program: Command) {
 
       // Save updated scan result (exclude deleted pages)
       const deletedSet = new Set(deleted);
-      const result: ScanResult = {
-        siteUrl: config.site.url,
-        scannedAt: new Date().toISOString(),
-        totalPages: pages.filter(p => !deletedSet.has(p.url)).length,
-        pages: pages.filter(p => !deletedSet.has(p.url)),
+      const filtered: ScanResult = {
+        siteUrl: result.siteUrl,
+        scannedAt: result.scannedAt,
+        totalPages: result.pages.filter(p => !deletedSet.has(p.url)).length,
+        pages: result.pages.filter(p => !deletedSet.has(p.url)),
       };
-      writeFileSync(`${outDir}/scan-result.json`, JSON.stringify(result, null, 2), 'utf-8');
+      writeFileSync(`${outDir}/scan-result.json`, JSON.stringify(filtered, null, 2), 'utf-8');
 
       // Regenerate outputs
       const genSp = spinner('Regenerating files...');
 
-      writeFileSync(`${outDir}/llms.txt`, generateLlmsTxt(result, config.site.name, config.site.description), 'utf-8');
-      writeFileSync(`${outDir}/agent-sitemap.json`, JSON.stringify(generateAgentSitemap(result), null, 2), 'utf-8');
-      writeFileSync(`${outDir}/agent-index.json`, JSON.stringify(generateAgentIndex(result, config.site.name, config.site.description), null, 2), 'utf-8');
+      writeFileSync(`${outDir}/llms.txt`, generateLlmsTxt(filtered, config.site.name, config.site.description), 'utf-8');
+      writeFileSync(`${outDir}/agent-sitemap.json`, JSON.stringify(generateAgentSitemap(filtered), null, 2), 'utf-8');
+      writeFileSync(`${outDir}/agent-index.json`, JSON.stringify(generateAgentIndex(filtered, config.site.name, config.site.description), null, 2), 'utf-8');
 
-      const { docs, faq, products, articles, pricing, changelog } = await generateStructuredExports(result, outDir, config);
+      const { docs, faq, products, articles, pricing, changelog } = await generateStructuredExports(filtered, outDir, config);
       writeFileSync(`${outDir}/data/docs.json`, JSON.stringify(docs, null, 2), 'utf-8');
       writeFileSync(`${outDir}/data/faq.json`, JSON.stringify(faq, null, 2), 'utf-8');
       writeFileSync(`${outDir}/data/products.json`, JSON.stringify(products, null, 2), 'utf-8');
