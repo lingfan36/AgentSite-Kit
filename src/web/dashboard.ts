@@ -3,80 +3,72 @@ export const dashboardHtml = `<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AgentSite Kit Dashboard</title>
+<title>AgentSite Kit</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:system-ui,sans-serif;background:#f5f5f5;display:flex;min-height:100vh}
-.sidebar{width:220px;background:#1a1a2e;color:#fff;padding:20px 0;position:fixed;height:100vh;overflow-y:auto}
-.sidebar h1{font-size:16px;padding:0 20px 20px;border-bottom:1px solid #333}
-.sidebar nav{padding:10px 0}
-.sidebar a{display:block;padding:10px 20px;color:#aaa;text-decoration:none;font-size:14px;transition:all .2s}
-.sidebar a:hover,.sidebar a.active{background:#16213e;color:#fff}
-.sidebar a .icon{margin-right:8px}
-.main{margin-left:220px;flex:1;padding:20px;min-height:100vh}
-.header{background:#fff;padding:20px;border-radius:8px;margin-bottom:20px;box-shadow:0 2px 4px rgba(0,0,0,0.1)}
-h2{font-size:20px;margin-bottom:5px}
-.subtitle{color:#666;font-size:14px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:20px}
-.card{background:#fff;padding:20px;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.1)}
-.card h3{font-size:14px;margin-bottom:8px;color:#666}
-.stat{font-size:28px;font-weight:bold;color:#0066cc}
-.table-wrap{background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 4px rgba(0,0,0,0.1);margin-bottom:20px}
+body{font-family:Inter,system-ui,-apple-system,sans-serif;background:#fafafa;display:flex;min-height:100vh;color:#111;-webkit-font-smoothing:antialiased}
+.sidebar{width:200px;background:#111;color:#888;padding:32px 0 20px;position:fixed;height:100vh;overflow-y:auto}
+.sidebar h1{font-size:13px;font-weight:500;letter-spacing:2px;text-transform:uppercase;padding:0 24px 32px;color:#555}
+.sidebar nav{display:flex;flex-direction:column;gap:2px}
+.sidebar a{display:block;padding:10px 24px;color:#666;text-decoration:none;font-size:13px;font-weight:400;transition:color .15s;border-left:2px solid transparent}
+.sidebar a:hover{color:#ccc}
+.sidebar a.active{color:#fff;border-left-color:#fff}
+.main{margin-left:200px;flex:1;padding:40px 48px;min-height:100vh;max-width:1200px}
+h2{font-size:24px;font-weight:600;letter-spacing:-0.5px;margin-bottom:32px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:32px}
+.card{background:#fff;padding:24px;border-radius:10px;border:1px solid #e8e8e8}
+.card h3{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:1px;color:#999;margin-bottom:10px}
+.stat{font-size:36px;font-weight:600;color:#111;letter-spacing:-1px}
+.table-wrap{background:#fff;border-radius:10px;border:1px solid #e8e8e8;overflow:hidden;margin-bottom:32px}
 table{width:100%;border-collapse:collapse}
-th,td{padding:10px 12px;text-align:left;border-bottom:1px solid #eee;font-size:13px}
-th{background:#f9f9f9;font-weight:600}
-.badge{display:inline-block;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:500}
-.badge-docs{background:#e3f2fd;color:#1976d2}
-.badge-faq{background:#f3e5f5;color:#7b1fa2}
-.badge-blog{background:#e8f5e9;color:#388e3c}
-.badge-product{background:#fff3e0;color:#f57c00}
-.badge-pricing{background:#fce4ec;color:#c2185b}
-.badge-changelog{background:#e0f2f1;color:#00796b}
-.badge-homepage{background:#f5f5f5;color:#616161}
-.badge-about{background:#ede7f6;color:#512da8}
-.badge-contact{background:#e8eaf6;color:#283593}
-.badge-unknown{background:#eceff1;color:#546e7a}
-.toolbar{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
-.toolbar input,.toolbar select{padding:8px 12px;border:1px solid #ddd;border-radius:6px;font-size:13px}
+th,td{padding:12px 16px;text-align:left;border-bottom:1px solid #f0f0f0;font-size:13px}
+th{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.5px;color:#999;background:#fff}
+td{color:#333}
+tr:last-child td{border-bottom:none}
+.badge{display:inline-block;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:500;background:#f0f0f0;color:#555}
+.toolbar{display:flex;gap:10px;margin-bottom:20px}
+.toolbar input,.toolbar select{padding:10px 14px;border:1px solid #e0e0e0;border-radius:8px;font-size:13px;background:#fff;color:#111;outline:none;transition:border-color .15s}
+.toolbar input:focus,.toolbar select:focus{border-color:#999}
 .toolbar input{flex:1;min-width:200px}
-.pre-wrap{background:#f8f8f8;border:1px solid #eee;border-radius:6px;padding:16px;font-family:monospace;font-size:12px;white-space:pre-wrap;word-break:break-all;max-height:500px;overflow-y:auto;margin-bottom:16px}
-.file-card{background:#fff;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.1);margin-bottom:16px;overflow:hidden}
-.file-card .file-header{padding:12px 16px;background:#f9f9f9;font-weight:600;font-size:13px;display:flex;justify-content:space-between;cursor:pointer}
-.file-card .file-body{padding:16px;display:none}
+.pre-wrap{background:#fff;border:1px solid #e8e8e8;border-radius:10px;padding:20px;font-family:'SF Mono',Consolas,monospace;font-size:12px;line-height:1.7;white-space:pre-wrap;word-break:break-all;max-height:500px;overflow-y:auto;margin-bottom:20px;color:#333}
+.file-card{background:#fff;border-radius:10px;border:1px solid #e8e8e8;margin-bottom:12px;overflow:hidden}
+.file-card .file-header{padding:14px 20px;font-weight:500;font-size:13px;display:flex;justify-content:space-between;cursor:pointer;transition:background .15s}
+.file-card .file-header:hover{background:#fafafa}
+.file-card .file-body{padding:20px;display:none;border-top:1px solid #f0f0f0}
 .file-card.open .file-body{display:block}
-.log-entry{display:grid;grid-template-columns:180px 60px 1fr 60px 80px;gap:8px;padding:8px 12px;border-bottom:1px solid #f0f0f0;font-size:12px;align-items:center}
-.log-entry:hover{background:#f9f9f9}
-.status-2xx{color:#388e3c}.status-4xx{color:#f57c00}.status-5xx{color:#c62828}
+.log-entry{display:grid;grid-template-columns:180px 56px 1fr 56px 72px;gap:8px;padding:10px 16px;border-bottom:1px solid #f0f0f0;font-size:12px;align-items:center}
+.log-entry:last-child{border-bottom:none}
+.status-2xx{color:#333}.status-4xx{color:#a0a}.status-5xx{color:#c00}
 .page-view{display:none}
 .page-view.active{display:block}
-.tab-bar{display:flex;gap:4px;margin-bottom:16px;border-bottom:2px solid #eee;padding-bottom:-2px}
-.tab{padding:8px 16px;cursor:pointer;font-size:13px;color:#666;border-bottom:2px solid transparent;margin-bottom:-2px}
-.tab.active{color:#0066cc;border-bottom-color:#0066cc}
-.site-switcher{padding:10px 20px;margin-top:10px}
-.site-switcher select{width:100%;padding:6px 8px;border-radius:4px;border:1px solid #444;background:#16213e;color:#fff;font-size:12px}
+.site-switcher{padding:12px 24px;margin-top:10px}
+.site-switcher select{width:100%;padding:6px 8px;border-radius:6px;border:1px solid #333;background:#222;color:#ccc;font-size:12px}
+btn{display:inline-block;padding:10px 24px;background:#111;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;transition:background .15s}
+btn:hover{background:#333}
+btn:disabled{opacity:.4;cursor:not-allowed}
+.op-status{margin-top:10px;font-size:12px;color:#888}
 </style>
 </head>
 <body>
 <div class="sidebar">
-<h1>AgentSite Kit</h1>
+<h1>AgentSite</h1>
 <div class="site-switcher" id="siteSwitcher" style="display:none">
 <select id="siteSelect"></select>
 </div>
 <nav>
-<a href="#/" class="active"><span class="icon">&#9632;</span> Overview</a>
-<a href="#/pages"><span class="icon">&#9776;</span> Pages</a>
-<a href="#/files"><span class="icon">&#128196;</span> Files</a>
-<a href="#/config"><span class="icon">&#9881;</span> Config</a>
-<a href="#/logs"><span class="icon">&#128203;</span> Access Logs</a>
-<a href="#/sites"><span class="icon">&#127760;</span> Sites</a>
-<a href="#/export"><span class="icon">&#9654;</span> Operations</a>
+<a href="#/" class="active">Overview</a>
+<a href="#/pages">Pages</a>
+<a href="#/files">Files</a>
+<a href="#/config">Config</a>
+<a href="#/logs">Logs</a>
+<a href="#/sites">Sites</a>
+<a href="#/export">Operations</a>
 </nav>
 </div>
 <div class="main">
 
-<!-- Overview Page -->
 <div class="page-view active" id="page-overview">
-<div class="header"><h2>Overview</h2><p class="subtitle">Site health at a glance</p></div>
+<h2>Overview</h2>
 <div class="grid" id="statsGrid"></div>
 <div class="table-wrap">
 <table><thead><tr><th>Title</th><th>Type</th><th>URL</th><th>Words</th></tr></thead>
@@ -84,9 +76,8 @@ th{background:#f9f9f9;font-weight:600}
 </div>
 </div>
 
-<!-- Pages Page -->
 <div class="page-view" id="page-pages">
-<div class="header"><h2>Pages</h2><p class="subtitle">All scanned pages</p></div>
+<h2>Pages</h2>
 <div class="toolbar">
 <input type="text" id="pageSearch" placeholder="Search pages...">
 <select id="typeFilter"><option value="">All types</option></select>
@@ -97,60 +88,54 @@ th{background:#f9f9f9;font-weight:600}
 </div>
 </div>
 
-<!-- Files Page -->
 <div class="page-view" id="page-files">
-<div class="header"><h2>Generated Files</h2><p class="subtitle">Preview output files</p></div>
+<h2>Files</h2>
 <div id="filesList"></div>
 </div>
 
-<!-- Config Page -->
 <div class="page-view" id="page-config">
-<div class="header"><h2>Configuration</h2><p class="subtitle">Current AgentSite config (API keys hidden)</p></div>
+<h2>Config</h2>
 <div class="pre-wrap" id="configContent">Loading...</div>
 </div>
 
-<!-- Logs Page -->
 <div class="page-view" id="page-logs">
-<div class="header"><h2>Access Logs</h2><p class="subtitle">Recent API requests</p></div>
+<h2>Logs</h2>
 <div class="grid" id="logStats"></div>
-<div class="table-wrap" style="margin-top:16px">
-<div class="log-entry" style="font-weight:600;background:#f9f9f9">
+<div class="table-wrap" style="margin-top:4px">
+<div class="log-entry" style="font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:#999">
 <span>Timestamp</span><span>Method</span><span>Path</span><span>Status</span><span>Time</span>
 </div>
 <div id="logEntries"></div>
 </div>
 </div>
 
-<!-- Sites Page -->
 <div class="page-view" id="page-sites">
-<div class="header"><h2>Sites</h2><p class="subtitle">Multi-site management</p></div>
+<h2>Sites</h2>
 <div id="sitesContent">
-<div class="card"><p>Configure multiple sites in your <code>agentsite.config.yaml</code> using the <code>sites</code> array.</p></div>
+<div class="card"><p style="font-size:13px;color:#666;line-height:1.6">Configure multiple sites in <code style="background:#f0f0f0;padding:2px 6px;border-radius:4px;font-size:12px">agentsite.config.yaml</code> using the <code style="background:#f0f0f0;padding:2px 6px;border-radius:4px;font-size:12px">sites</code> array.</p></div>
 </div>
 </div>
 
-<!-- Export/Operations Page -->
 <div class="page-view" id="page-export">
-<div class="header"><h2>Operations</h2><p class="subtitle">Trigger scan and generation tasks</p></div>
-<div class="grid">
+<h2>Operations</h2>
+<div class="grid" style="grid-template-columns:1fr 1fr">
 <div class="card">
-<h3>Re-scan Site</h3>
-<p style="font-size:13px;color:#666;margin-bottom:12px">Crawl the site again and update scan results.</p>
-<button id="btnRescan" style="padding:8px 20px;background:#0066cc;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:13px">Start Rescan</button>
-<div id="rescanStatus" style="margin-top:8px;font-size:12px;color:#666"></div>
+<h3>Re-scan</h3>
+<p style="font-size:13px;color:#666;margin:8px 0 16px;line-height:1.5">Crawl the site and update scan results.</p>
+<button class="btn" id="btnRescan">Start Rescan</button>
+<div class="op-status" id="rescanStatus"></div>
 </div>
 <div class="card">
-<h3>Regenerate Files</h3>
-<p style="font-size:13px;color:#666;margin-bottom:12px">Regenerate all output files from scan results.</p>
-<button id="btnRegenerate" style="padding:8px 20px;background:#388e3c;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:13px">Regenerate</button>
-<div id="regenStatus" style="margin-top:8px;font-size:12px;color:#666"></div>
+<h3>Regenerate</h3>
+<p style="font-size:13px;color:#666;margin:8px 0 16px;line-height:1.5">Regenerate all output files from scan data.</p>
+<button class="btn" id="btnRegenerate">Regenerate</button>
+<div class="op-status" id="regenStatus"></div>
 </div>
 </div>
 </div>
 
 </div>
 <script>
-// Router
 var allPages=[];
 function navigate(){
   var hash=location.hash||'#/';
@@ -169,12 +154,11 @@ function navigate(){
 }
 window.addEventListener('hashchange',navigate);
 
-// Load overview + stats
 function loadOverview(){
   fetch('/api/stats').then(function(r){return r.json()}).then(function(s){
     var g=document.getElementById('statsGrid');
-    g.innerHTML='<div class="card"><h3>Total Pages</h3><div class="stat">'+s.totalPages+'</div></div>'
-      +'<div class="card"><h3>Total Words</h3><div class="stat">'+s.totalWords.toLocaleString()+'</div></div>'
+    g.innerHTML='<div class="card"><h3>Pages</h3><div class="stat">'+s.totalPages+'</div></div>'
+      +'<div class="card"><h3>Words</h3><div class="stat">'+s.totalWords.toLocaleString()+'</div></div>'
       +'<div class="card"><h3>Docs</h3><div class="stat">'+(s.pageTypes.docs||0)+'</div></div>'
       +'<div class="card"><h3>FAQ</h3><div class="stat">'+(s.pageTypes.faq||0)+'</div></div>'
       +'<div class="card"><h3>Blog</h3><div class="stat">'+(s.pageTypes.blog||0)+'</div></div>'
@@ -189,18 +173,15 @@ function loadOverview(){
 }
 
 function renderOverviewTable(pages){
-  var tb=document.getElementById('overviewTable');
-  tb.innerHTML=pages.map(function(p){
-    return '<tr><td>'+esc(p.title)+'</td><td><span class="badge badge-'+p.type+'">'+p.type+'</span></td><td style="font-size:12px;color:#666">'+esc(p.url)+'</td><td>'+p.wordCount+'</td></tr>';
+  document.getElementById('overviewTable').innerHTML=pages.map(function(p){
+    return '<tr><td>'+esc(p.title)+'</td><td><span class="badge">'+p.type+'</span></td><td style="font-size:12px;color:#999">'+esc(p.url)+'</td><td style="color:#999">'+p.wordCount+'</td></tr>';
   }).join('');
 }
 
-// Pages
 function renderPagesTable(pages){
-  var tb=document.getElementById('pagesTable');
-  tb.innerHTML=pages.map(function(p){
+  document.getElementById('pagesTable').innerHTML=pages.map(function(p){
     var tags=(p.tags||[]).join(', ');
-    return '<tr><td>'+esc(p.title)+'</td><td><span class="badge badge-'+p.type+'">'+p.type+'</span></td><td style="font-size:12px;color:#666">'+esc(p.url)+'</td><td>'+p.wordCount+'</td><td style="font-size:11px;color:#888">'+esc(tags)+'</td></tr>';
+    return '<tr><td>'+esc(p.title)+'</td><td><span class="badge">'+p.type+'</span></td><td style="font-size:12px;color:#999">'+esc(p.url)+'</td><td style="color:#999">'+p.wordCount+'</td><td style="font-size:11px;color:#bbb">'+esc(tags)+'</td></tr>';
   }).join('');
 }
 
@@ -225,46 +206,38 @@ function filterPages(){
   renderPagesTable(filtered);
 }
 
-// Files
 function loadFiles(){
   fetch('/api/files').then(function(r){return r.json()}).then(function(d){
-    var container=document.getElementById('filesList');
-    container.innerHTML=d.files.map(function(f){
+    document.getElementById('filesList').innerHTML=d.files.map(function(f){
       var preview=f.content?f.content.substring(0,2000):'';
-      return '<div class="file-card"><div class="file-header" onclick="this.parentElement.classList.toggle(\\'open\\')"><span>'+esc(f.name)+'</span><span style="color:#888">'+formatSize(f.size)+'</span></div><div class="file-body"><pre class="pre-wrap">'+esc(preview)+(f.size>2000?'\\n...truncated':'')+'</pre></div></div>';
+      return '<div class="file-card"><div class="file-header" onclick="this.parentElement.classList.toggle(\\'open\\')"><span>'+esc(f.name)+'</span><span style="color:#bbb;font-weight:400">'+formatSize(f.size)+'</span></div><div class="file-body"><pre class="pre-wrap" style="margin:0;border:0;padding:0">'+esc(preview)+(f.size>2000?'\\n...':'')+'</pre></div></div>';
     }).join('');
   });
 }
 
-// Config
 function loadConfig(){
   fetch('/api/config').then(function(r){return r.json()}).then(function(c){
     document.getElementById('configContent').textContent=JSON.stringify(c,null,2);
   });
 }
 
-// Logs
 function loadLogs(){
   fetch('/api/access-log?limit=200').then(function(r){return r.json()}).then(function(d){
     var entries=d.entries||[];
-    // Stats
     var total=entries.length;
     var ok=entries.filter(function(e){return e.statusCode<400}).length;
     var avgTime=total?Math.round(entries.reduce(function(s,e){return s+e.responseTimeMs},0)/total):0;
     document.getElementById('logStats').innerHTML=
-      '<div class="card"><h3>Recent Requests</h3><div class="stat">'+total+'</div></div>'
-      +'<div class="card"><h3>Success Rate</h3><div class="stat">'+(total?Math.round(ok/total*100):0)+'%</div></div>'
-      +'<div class="card"><h3>Avg Response</h3><div class="stat">'+avgTime+'ms</div></div>';
-    // Entries
-    var container=document.getElementById('logEntries');
-    container.innerHTML=entries.slice(0,100).map(function(e){
+      '<div class="card"><h3>Requests</h3><div class="stat">'+total+'</div></div>'
+      +'<div class="card"><h3>Success</h3><div class="stat">'+(total?Math.round(ok/total*100):0)+'%</div></div>'
+      +'<div class="card"><h3>Avg Time</h3><div class="stat">'+avgTime+'<span style="font-size:14px;font-weight:400;color:#999">ms</span></div></div>';
+    document.getElementById('logEntries').innerHTML=entries.slice(0,100).map(function(e){
       var cls=e.statusCode<400?'status-2xx':e.statusCode<500?'status-4xx':'status-5xx';
-      return '<div class="log-entry"><span>'+new Date(e.timestamp).toLocaleString()+'</span><span><b>'+e.method+'</b></span><span style="color:#666">'+esc(e.path+(e.query?'?'+e.query:''))+'</span><span class="'+cls+'">'+e.statusCode+'</span><span>'+e.responseTimeMs+'ms</span></div>';
+      return '<div class="log-entry"><span style="color:#999">'+new Date(e.timestamp).toLocaleString()+'</span><span style="font-weight:500">'+e.method+'</span><span style="color:#888">'+esc(e.path+(e.query?'?'+e.query:''))+'</span><span class="'+cls+'">'+e.statusCode+'</span><span style="color:#999">'+e.responseTimeMs+'ms</span></div>';
     }).join('');
   });
 }
 
-// Operations
 document.getElementById('btnRescan').addEventListener('click',function(){
   var btn=this;btn.disabled=true;btn.textContent='Scanning...';
   document.getElementById('rescanStatus').textContent='Running...';
@@ -289,11 +262,9 @@ document.getElementById('btnRegenerate').addEventListener('click',function(){
   });
 });
 
-// Utils
 function esc(s){if(!s)return '';return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 function formatSize(b){if(b<1024)return b+'B';if(b<1048576)return (b/1024).toFixed(1)+'KB';return (b/1048576).toFixed(1)+'MB'}
 
-// Init
 loadOverview();
 navigate();
 </script>
