@@ -2,40 +2,10 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
 import { readFileSync, existsSync } from 'node:fs';
-import type { ScanResult } from '../types/page.js';
-import type { DocEntry, FaqEntry, ProductEntry, ArticleEntry, PricingEntry, ChangelogEntry } from '../types/content.js';
+import { loadSiteData, type SiteData } from '../utils/data-loader.js';
 import { buildSearchIndex, queryIndex } from '../utils/search.js';
 
-interface McpData {
-  scanResult: ScanResult;
-  docs: DocEntry[];
-  faq: FaqEntry[];
-  products: ProductEntry[];
-  articles: ArticleEntry[];
-  pricing: PricingEntry[];
-  changelog: ChangelogEntry[];
-}
-
-function loadData(outDir: string): McpData {
-  const loadJson = <T>(path: string): T[] => {
-    if (!existsSync(path)) return [];
-    return JSON.parse(readFileSync(path, 'utf-8'));
-  };
-
-  const scanResult: ScanResult = JSON.parse(readFileSync(`${outDir}/scan-result.json`, 'utf-8'));
-
-  return {
-    scanResult,
-    docs: loadJson<DocEntry>(`${outDir}/data/docs.json`),
-    faq: loadJson<FaqEntry>(`${outDir}/data/faq.json`),
-    products: loadJson<ProductEntry>(`${outDir}/data/products.json`),
-    articles: loadJson<ArticleEntry>(`${outDir}/data/articles.json`),
-    pricing: loadJson<PricingEntry>(`${outDir}/data/pricing.json`),
-    changelog: loadJson<ChangelogEntry>(`${outDir}/data/changelog.json`),
-  };
-}
-
-function registerTools(server: McpServer, data: McpData, searchIndex: Map<string, Set<number>>, outDir: string) {
+function registerTools(server: McpServer, data: SiteData, searchIndex: Map<string, Set<number>>, outDir: string) {
   server.tool(
     'search',
     'Search site content by keyword',
@@ -276,7 +246,7 @@ function registerResources(server: McpServer, outDir: string) {
 }
 
 export async function startMcpServer(outDir: string) {
-  const data = loadData(outDir);
+  const data = loadSiteData(outDir)!;
   const searchIndex = buildSearchIndex(data.scanResult.pages);
 
   const server = new McpServer({

@@ -1,32 +1,8 @@
 import { Command } from 'commander';
-import { readFileSync, existsSync } from 'node:fs';
 import { loadConfig, toSlug } from '../config/loader.js';
 import { createApp, type ServerData } from '../server/app.js';
 import { log } from '../utils/logger.js';
-import type { ScanResult } from '../types/page.js';
-
-function loadJson(path: string): unknown[] {
-  if (!existsSync(path)) return [];
-  return JSON.parse(readFileSync(path, 'utf-8'));
-}
-
-function loadSiteData(outDir: string): { scanResult: ScanResult; data: ServerData } | null {
-  const scanPath = `${outDir}/scan-result.json`;
-  if (!existsSync(scanPath)) return null;
-
-  const scanResult: ScanResult = JSON.parse(readFileSync(scanPath, 'utf-8'));
-  const data: ServerData = {
-    pages: scanResult.pages,
-    docs: loadJson(`${outDir}/data/docs.json`) as ServerData['docs'],
-    faq: loadJson(`${outDir}/data/faq.json`) as ServerData['faq'],
-    products: loadJson(`${outDir}/data/products.json`) as ServerData['products'],
-    articles: loadJson(`${outDir}/data/articles.json`) as ServerData['articles'],
-    pricing: loadJson(`${outDir}/data/pricing.json`) as ServerData['pricing'],
-    changelog: loadJson(`${outDir}/data/changelog.json`) as ServerData['changelog'],
-  };
-
-  return { scanResult, data };
-}
+import { loadSiteData } from '../utils/data-loader.js';
 
 export function registerServeCommand(program: Command) {
   program
@@ -39,10 +15,9 @@ export function registerServeCommand(program: Command) {
 
       // Load primary site data (allow empty data so server can still boot)
       const primary = loadSiteData(outDir);
-      const data: ServerData = primary?.data ?? {
-        pages: [], docs: [], faq: [], products: [],
-        articles: [], pricing: [], changelog: [],
-      };
+      const data: ServerData = primary
+        ? { pages: primary.scanResult.pages, docs: primary.docs, faq: primary.faq, products: primary.products, articles: primary.articles, pricing: primary.pricing, changelog: primary.changelog }
+        : { pages: [], docs: [], faq: [], products: [], articles: [], pricing: [], changelog: [] };
       if (!primary) {
         log.warn('No scan data found. Server starting with empty data.');
         log.warn('Use the Dashboard Operations panel or run `agentsite scan && agentsite generate` to populate.');
@@ -63,18 +38,18 @@ export function registerServeCommand(program: Command) {
               siteUrl: siteData.scanResult.siteUrl,
               scannedAt: siteData.scanResult.scannedAt,
               totalPages: siteData.scanResult.totalPages,
-              pages: siteData.data.pages,
+              pages: siteData.scanResult.pages,
             }));
             app.get(`/api/${slug}/search`, async (req) => {
               const query = req.query as Record<string, string>;
               return { site: slug, query: query.q, results: [] };
             });
-            app.get(`/api/${slug}/docs`, async () => siteData.data.docs);
-            app.get(`/api/${slug}/faq`, async () => siteData.data.faq);
-            app.get(`/api/${slug}/products`, async () => siteData.data.products);
-            app.get(`/api/${slug}/articles`, async () => siteData.data.articles);
-            app.get(`/api/${slug}/pricing`, async () => siteData.data.pricing);
-            app.get(`/api/${slug}/changelog`, async () => siteData.data.changelog);
+            app.get(`/api/${slug}/docs`, async () => siteData.docs);
+            app.get(`/api/${slug}/faq`, async () => siteData.faq);
+            app.get(`/api/${slug}/products`, async () => siteData.products);
+            app.get(`/api/${slug}/articles`, async () => siteData.articles);
+            app.get(`/api/${slug}/pricing`, async () => siteData.pricing);
+            app.get(`/api/${slug}/changelog`, async () => siteData.changelog);
           }
         }
       }
