@@ -8,8 +8,8 @@ import { extractContent } from '../scanner/content-extractor.js';
 import { sha256 } from '../utils/hash.js';
 import { log, spinner } from '../utils/logger.js';
 import { getLlmConfig } from '../llm/client.js';
-import { llmClassifyPage } from '../llm/classifier.js';
-import { llmSummarize } from '../llm/summarizer.js';
+import { llmClassifyPage } from '../llm/inference.js';
+import { llmSummarize } from '../llm/inference.js';
 import { loadPlugins, runHook, runAfterScan } from '../plugins/loader.js';
 import type { ScannedPage, ScanResult } from '../types/page.js';
 

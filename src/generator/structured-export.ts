@@ -2,7 +2,7 @@ import { readFileSync, existsSync } from 'node:fs';
 import { sha256 } from '../utils/hash.js';
 import { extractContent } from '../scanner/content-extractor.js';
 import { getLlmConfig, type LlmConfig } from '../llm/client.js';
-import { llmExtractTags } from '../llm/summarizer.js';
+import { llmExtractTags } from '../llm/inference.js';
 import type { ScanResult } from '../types/page.js';
 import type { DocEntry, FaqEntry, ProductEntry, ArticleEntry, PricingEntry, ChangelogEntry } from '../types/content.js';
 import type { AgentSiteConfig } from '../types/config.js';
