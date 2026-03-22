@@ -8,8 +8,7 @@ import { extractContent } from '../scanner/content-extractor.js';
 import { sha256 } from '../utils/hash.js';
 import { log, spinner } from '../utils/logger.js';
 import { getLlmConfig } from '../llm/client.js';
-import { llmClassifyPage } from '../llm/inference.js';
-import { llmSummarize } from '../llm/inference.js';
+import { llmClassifyPage, llmSummarize } from '../llm/inference.js';
 import { loadPlugins, runHook, runAfterScan } from '../plugins/loader.js';
 import type { ScannedPage, ScanResult } from '../types/page.js';
 
@@ -114,7 +113,12 @@ export async function runScan(configOverride?: ReturnType<typeof loadConfig>): P
 
   writeFileSync(`${outDir}/scan-result.json`, JSON.stringify(result, null, 2), 'utf-8');
 
-  // Scan report
+  printScanReport(pages, failed, outDir);
+
+  return result;
+}
+
+function printScanReport(pages: ScannedPage[], failed: string[], outDir: string) {
   const typeCounts = new Map<string, number>();
   let spaCount = 0;
   let emptySummary = 0;
@@ -147,8 +151,6 @@ export async function runScan(configOverride?: ReturnType<typeof loadConfig>): P
   }
   log.info('─'.repeat(40));
   log.success(`Output: ${outDir}/scan-result.json`);
-
-  return result;
 }
 
 export function registerScanCommand(program: Command) {
