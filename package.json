@@ -39,7 +39,10 @@
     "structured-data",
     "mcp",
     "llms-txt",
-    "agent-friendly"
+    "agent-friendly",
+    "geo",
+    "generative-engine-optimization",
+    "ai-search"
   ],
   "license": "MIT",
   "dependencies": {

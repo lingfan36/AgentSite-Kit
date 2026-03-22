@@ -1,44 +1,93 @@
-# AgentSite Kit
+<p align="center">
+  <br />
+  <code>&nbsp;🤖 AgentSite Kit&nbsp;</code>
+  <br />
+  <strong>Make any website Agent-friendly.</strong>
+  <br />
+  <br />
+  <a href="https://www.npmjs.com/package/agentsite-kit"><img src="https://img.shields.io/npm/v/agentsite-kit.svg" alt="npm version" /></a>
+  <a href="https://www.npmjs.com/package/agentsite-kit"><img src="https://img.shields.io/npm/dm/agentsite-kit.svg" alt="npm downloads" /></a>
+  <a href="https://github.com/lingfan36/AgentSite-Kit/blob/main/LICENSE"><img src="https://img.shields.io/github/license/lingfan36/AgentSite-Kit.svg" alt="license" /></a>
+  <img src="https://img.shields.io/node/v/agentsite-kit.svg" alt="node version" />
+  <br />
+  <br />
+  <a href="./README.zh-CN.md">中文文档</a> · <a href="https://github.com/lingfan36/AgentSite-Kit/issues">Report Bug</a> · <a href="https://github.com/lingfan36/AgentSite-Kit/issues">Request Feature</a>
+</p>
 
-[中文文档](./README.zh-CN.md)
-
-Make any website Agent-friendly.
+---
 
 AgentSite Kit scans your website's public pages, extracts and classifies content, then generates structured data and APIs that AI Agents can reliably read, search, and query.
 
-In the age of AI search (Perplexity, ChatGPT Search) and autonomous Agents, websites need more than just human-readable HTML. AgentSite Kit adds an **Agent-readable layer** on top of your existing site — no redesign required.
+## Why?
 
-## What It Does
+**Search is changing.** AI-powered search (Perplexity, ChatGPT Search, Google AI Overviews) and autonomous Agents are replacing traditional search engines. Gartner predicts traditional search volume will drop **25% by 2026**.
 
-- **Scans** your site via sitemap or crawling, respects robots.txt
-- **Classifies** pages automatically (docs, FAQ, blog, product, pricing, changelog, etc.)
-- **Extracts** titles, summaries, headings, metadata, and body content
-- **Generates** standardized output files: `llms.txt`, `agent-sitemap.json`, `agent-index.json`, and per-type structured JSON
-- **Serves** a query API for Agents to search and retrieve your content
-- **Supports MCP** (Model Context Protocol) for direct integration with AI tools
-- **Detects changes** incrementally — only re-processes updated pages
+The problem: **93% of AI search sessions end without a website visit.** AI engines read your site, summarize it, and answer the user directly. If your site isn't structured for AI consumption, you become invisible.
+
+AgentSite Kit adds an **Agent-readable layer** on top of your existing site — no redesign required:
+
+- Generates `llms.txt` so LLMs understand your site at a glance
+- Creates structured JSON indexes for agent navigation
+- Serves a query API for real-time agent access
+- Supports MCP (Model Context Protocol) for direct AI tool integration
+
+> In the era of **GEO** (Generative Engine Optimization), making your website Agent-friendly isn't optional — it's the new SEO.
+
+## Features
+
+- **Scan** — Discovers pages via sitemap or crawling, respects robots.txt
+- **Classify** — Auto-detects page types (docs, FAQ, blog, product, pricing, changelog, etc.)
+- **Extract** — Titles, summaries, headings, metadata, and body content
+- **Generate** — Standardized output: `llms.txt`, `agent-sitemap.json`, `agent-index.json`, and per-type structured JSON
+- **Serve** — Query API for agents to search and retrieve your content
+- **MCP** — Model Context Protocol server for direct AI tool integration
+- **Incremental Updates** — Only re-processes changed pages
+- **LLM-Assisted** — Optional AI-powered classification and summarization
+- **Plugin System** — Lifecycle hooks for custom processing
+- **Multi-Site** — Manage multiple websites from a single config
+- **Docker** — Ready-to-deploy container support
 
 ## Quick Start
 
 ```bash
-# Install dependencies and build
-npm install
-npm run build
+# Install globally
+npm install -g agentsite-kit
 
 # Initialize config (interactive)
-npx agentsite init
+agentsite init
 
 # Scan your website
-npx agentsite scan
+agentsite scan
 
 # Generate Agent-friendly files
-npx agentsite generate
+agentsite generate
 
 # Start the API server
-npx agentsite serve
+agentsite serve
+```
+
+Or use without installing:
+
+```bash
+npx agentsite-kit init
+npx agentsite-kit scan
+npx agentsite-kit generate
+npx agentsite-kit serve
 ```
 
 The API server runs on `http://localhost:3141` by default.
+
+## How It Works
+
+```
+Your Website                    AgentSite Kit                    AI Agents
+┌──────────┐    agentsite scan    ┌──────────────┐    llms.txt      ┌──────────┐
+│  HTML     │ ──────────────────> │  Scan &      │ ──────────────> │ ChatGPT  │
+│  Pages    │                     │  Classify    │    JSON APIs    │ Claude   │
+│  sitemap  │                     │  Extract     │ ──────────────> │ Perplexity│
+└──────────┘                     │  Generate    │    MCP          │ Agents   │
+                                  └──────────────┘ ──────────────> └──────────┘
+```
 
 ## Commands
 
@@ -59,17 +108,19 @@ The API server runs on `http://localhost:3141` by default.
 
 Pre-configured templates for common site types:
 
-- `docs-site` — Documentation websites
-- `blog` — Blogs and content sites
-- `saas` — SaaS product websites
-- `knowledge-base` — Knowledge base / wiki sites
-- `ecommerce` — E-commerce stores
-- `portfolio` — Personal / portfolio sites
-- `api-docs` — API documentation
-- `community` — Community forums
+| Template | Use Case |
+|----------|----------|
+| `docs-site` | Documentation websites |
+| `blog` | Blogs and content sites |
+| `saas` | SaaS product websites |
+| `knowledge-base` | Knowledge base / wiki sites |
+| `ecommerce` | E-commerce stores |
+| `portfolio` | Personal / portfolio sites |
+| `api-docs` | API documentation |
+| `community` | Community forums |
 
 ```bash
-npx agentsite init -t saas
+agentsite init -t saas
 ```
 
 ## API Endpoints
@@ -174,6 +225,23 @@ llm:
   model: gpt-4o-mini
 ```
 
+## Comparison
+
+| Feature | AgentSite Kit | Firecrawl llms.txt | SiteSpeakAI | LLMs.txt Generator |
+|---------|:---:|:---:|:---:|:---:|
+| llms.txt generation | ✅ | ✅ | ✅ | ✅ |
+| Page classification | ✅ | ❌ | ❌ | ❌ |
+| Structured JSON export | ✅ | ❌ | ❌ | ❌ |
+| Query API server | ✅ | ❌ | ❌ | ❌ |
+| MCP integration | ✅ | ❌ | ❌ | ❌ |
+| Incremental updates | ✅ | ❌ | ❌ | ❌ |
+| Multi-site support | ✅ | ❌ | ❌ | ❌ |
+| Industry templates | ✅ | ❌ | ❌ | ❌ |
+| Plugin system | ✅ | ❌ | ❌ | ❌ |
+| Open source | ✅ | ✅ | ❌ | ✅ |
+| CLI tool | ✅ | ✅ | ❌ | ✅ |
+| Self-hosted | ✅ | ❌ | ❌ | ✅ |
+
 ## Docker
 
 ```bash
@@ -190,7 +258,7 @@ docker run -p 3141:3141 -v ./agentsite.config.yaml:/app/agentsite.config.yaml:ro
 AgentSite Kit can run as an MCP server, allowing AI tools (Claude, Cursor, etc.) to directly query your site data:
 
 ```bash
-npx agentsite mcp
+agentsite mcp
 ```
 
 Add to your MCP client config:
@@ -200,7 +268,7 @@ Add to your MCP client config:
   "mcpServers": {
     "my-site": {
       "command": "npx",
-      "args": ["agentsite", "mcp"]
+      "args": ["agentsite-kit", "mcp"]
     }
   }
 }
@@ -217,10 +285,18 @@ plugins:
 
 Plugins can hook into `beforeScan`, `afterScan`, `beforeGenerate`, and `afterGenerate` stages.
 
-## Requirements
+## Contributing
 
-- Node.js >= 18
+Contributions are welcome! See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
 
 ## License
 
-MIT
+[MIT](./LICENSE)
+
+---
+
+<p align="center">
+  <a href="https://star-history.com/#lingfan36/AgentSite-Kit&Date">
+    <img src="https://api.star-history.com/svg?repos=lingfan36/AgentSite-Kit&type=Date" width="600" alt="Star History" />
+  </a>
+</p>
