@@ -122,6 +122,55 @@ export async function createApp(config: ValidatedConfig | NormalizedConfig, data
     reply.type('text/html').send(dashboardHtml);
   });
 
+  // Static file routes for agents and crawlers
+  const { readFileSync: readFs, existsSync: existsFs } = await import('node:fs');
+  const outDir = config.output.dir;
+
+  app.get('/llms.txt', async (req, reply) => {
+    const p = `${outDir}/llms.txt`;
+    if (existsFs(p)) {
+      reply.type('text/plain').send(readFs(p, 'utf-8'));
+    } else {
+      reply.code(404).send('Not generated yet. Run scan + generate first.');
+    }
+  });
+
+  app.get('/agent-sitemap.json', async (req, reply) => {
+    const p = `${outDir}/agent-sitemap.json`;
+    if (existsFs(p)) {
+      reply.type('application/json').send(readFs(p, 'utf-8'));
+    } else {
+      reply.code(404).send({ error: 'Not generated yet' });
+    }
+  });
+
+  app.get('/agent-index.json', async (req, reply) => {
+    const p = `${outDir}/agent-index.json`;
+    if (existsFs(p)) {
+      reply.type('application/json').send(readFs(p, 'utf-8'));
+    } else {
+      reply.code(404).send({ error: 'Not generated yet' });
+    }
+  });
+
+  app.get('/.well-known/ai-plugin.json', async () => {
+    return {
+      schema_version: 'v1',
+      name_for_human: config.site.name,
+      name_for_model: config.site.name.toLowerCase().replace(/[^a-z0-9]+/g, '_'),
+      description_for_human: config.site.description,
+      description_for_model: `Access structured content from ${config.site.name}. Search pages, browse docs, FAQ, products, articles, pricing, and changelog via REST API.`,
+      auth: { type: 'none' },
+      api: {
+        type: 'openapi',
+        url: '/api/config',
+      },
+      logo_url: '',
+      contact_email: '',
+      legal_info_url: '',
+    };
+  });
+
   app.get('/api/pages-data', async () => {
     return {
       siteUrl: filteredData.pages[0]?.url.split('/').slice(0, 3).join('/') || '',

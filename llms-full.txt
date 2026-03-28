@@ -1,0 +1,296 @@
+# AgentSite Kit — Full Technical Reference
+
+> Make any website Agent-friendly. Scan, classify, extract, and serve structured data for AI agents.
+
+Version: 1.0.2
+License: MIT
+Repository: https://github.com/lingfan36/AgentSite-Kit
+npm: https://www.npmjs.com/package/agentsite-kit
+
+---
+
+## Architecture
+
+```
+src/
+├── commands/       # CLI commands (init, scan, generate, serve, update, mcp)
+├── config/         # Configuration loading, validation, persistence
+├── scanner/        # Website crawler, content extractor, page classifier
+├── generator/      # Output file generators (llms.txt, JSON, etc.)
+├── server/         # Fastify API server, routes, dashboard
+│   └── routes/     # content-routes, search, site-routes
+├── mcp/            # MCP (Model Context Protocol) server
+├── llm/            # LLM integration for classification/summarization
+├── plugins/        # Plugin system with lifecycle hooks
+├── types/          # TypeScript type definitions
+├── utils/          # Shared utilities (search, hash, access-control, etc.)
+└── web/            # Dashboard HTML
+```
+
+## CLI Commands
+
+### agentsite init
+Create `agentsite.config.yaml` interactively.
+Options: `-t <template>` (use industry template), `--list-templates` (list templates)
+
+Templates: docs-site, blog, saas, knowledge-base, ecommerce, portfolio, api-docs, community
+
+### agentsite scan
+Scan website and classify pages.
+Options: `--no-llm` (disable LLM-assisted classification)
+
+Process:
+1. Fetch sitemap (if available)
+2. Crawl pages (respects maxPages, concurrency, delayMs, robots.txt)
+3. Extract content (title, headings, body, metadata)
+4. Classify pages (rule-based or LLM-assisted)
+5. Generate summaries (rule-based or LLM-assisted)
+6. Write scan-result.json
+
+### agentsite generate
+Generate Agent-friendly files from scan results.
+
+Output files:
+- llms.txt — LLM-friendly plain text overview
+- agent-sitemap.json — Machine-readable sitemap with metadata
+- agent-index.json — Structured site index with API endpoint directory
+- data/docs.json — Documentation entries
+- data/faq.json — FAQ entries
+- data/products.json — Product entries
+- data/articles.json — Blog/article entries
+- data/pricing.json — Pricing/plan entries
+- data/changelog.json — Changelog/release entries
+
+### agentsite serve
+Start the Fastify API server.
+Options: `-p, --port <port>` (default: 3141)
+
+### agentsite update
+Incremental update — re-scan, detect changes, regenerate only what changed.
+
+### agentsite mcp
+Start MCP server over stdio for direct AI tool integration.
+
+---
+
+## Configuration Schema
+
+File: `agentsite.config.yaml`
+
+```yaml
+site:
+  url: string          # Required. Website URL to scan
+  name: string         # Required. Site name
+  description: string  # Site description (default: "")
+
+scan:
+  maxPages: number     # Max pages to crawl (default: 100)
+  concurrency: number  # Concurrent requests (default: 3)
+  delayMs: number      # Delay between requests in ms (default: 200)
+  include: string[]    # Glob patterns to include (default: ["**"])
+  exclude: string[]    # Glob patterns to exclude (default: [])
+  respectRobotsTxt: boolean  # (default: true)
+
+output:
+  dir: string          # Output directory (default: ".agentsite")
+  formats: string[]    # Output formats: llms-txt, agent-sitemap, agent-index, structured
+
+server:
+  port: number         # Server port (default: 3141)
+  rateLimit:
+    max: number        # Max requests per window (default: 60)
+    timeWindow: string # Rate limit window (default: "1 minute")
+  accessLog: boolean   # Enable access logging (default: true)
+
+access:
+  allowedPages: string[]   # Glob patterns for allowed pages (default: ["**"])
+  blockedPages: string[]   # Glob patterns for blocked pages (default: [])
+  allowedTypes: string[]   # Allowed page types (default: [docs, faq, blog, product, pricing, about, contact, changelog])
+  summaryOnly: boolean     # Only expose summaries, not full content (default: false)
+  allowSearch: boolean     # Enable search endpoint (default: true)
+
+llm:                   # Optional — enables AI-assisted classification/summarization
+  apiUrl: string       # OpenAI-compatible API URL (default: "https://api.openai.com/v1")
+  apiKey: string       # API key
+  model: string        # Model name (default: "gpt-4o-mini")
+
+plugins: string[]      # Plugin file paths (default: [])
+
+sites:                 # Optional — multi-site mode
+  - site: { url, name, description }
+    scan: { ... }
+    output: { ... }
+    access: { ... }
+```
+
+---
+
+## API Reference
+
+Base URL: `http://localhost:3141`
+
+### Content Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | /api/health | Health check. Returns `{ ok: true }` |
+| GET | /api/search?q={query} | Full-text search across all pages |
+| GET | /api/pages/{id} | Get single page by URL-derived ID |
+| GET | /api/docs?section={section} | Documentation entries, optional section filter |
+| GET | /api/faq?category={category} | FAQ entries, optional category filter |
+| GET | /api/products | Product entries |
+| GET | /api/articles?tag={tag}&page={n}&limit={n} | Articles with pagination and tag filter |
+| GET | /api/pricing | Pricing/plan entries |
+| GET | /api/changelog | Changelog entries |
+| GET | /api/stats | Site statistics (page counts, word counts, type breakdown) |
+| GET | /api/config | Current configuration (API keys masked) |
+| GET | /api/files | List generated files with content |
+| GET | /api/access-log?limit={n} | Recent access log entries |
+| GET | /api/pages-data | All pages with metadata |
+
+### Site Management Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | /api/sites | List all configured sites |
+| POST | /api/sites | Add a new site. Body: `{ url, name, description }` |
+| DELETE | /api/sites/{slug} | Remove a site by slug |
+| POST | /api/sites/{slug}/scan | Trigger scan + generate for a specific site |
+
+### Operation Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | /api/rescan | Rescan all sites. Optional body: `{ url }` for ad-hoc scan |
+| POST | /api/regenerate | Regenerate output files from existing scan data |
+| POST | /api/webhook | Webhook trigger (requires AGENTSITE_WEBHOOK_SECRET env var). Body: `{ secret, urls? }` |
+
+### Static File Routes
+
+| Path | Description |
+|------|-------------|
+| GET /llms.txt | LLM-friendly site overview |
+| GET /agent-sitemap.json | Machine-readable sitemap |
+| GET /agent-index.json | Structured site index |
+| GET /.well-known/ai-plugin.json | AI plugin manifest |
+
+### Multi-Site Endpoints
+
+When multiple sites are configured, each site gets prefixed endpoints:
+- GET /api/{slug}/pages-data
+- GET /api/{slug}/search?q={query}
+- GET /api/{slug}/docs
+- GET /api/{slug}/faq
+- GET /api/{slug}/products
+- GET /api/{slug}/articles
+- GET /api/{slug}/pricing
+- GET /api/{slug}/changelog
+
+---
+
+## Type Definitions
+
+### PageType
+```
+'homepage' | 'docs' | 'faq' | 'blog' | 'product' | 'pricing' | 'about' | 'contact' | 'changelog' | 'unknown'
+```
+
+### ScannedPage
+```
+{
+  url: string
+  title: string
+  type: PageType
+  contentHash: string
+  summary: string
+  headings: string[]
+  lastModified?: string
+  scannedAt: string
+  wordCount: number
+  tags?: string[]
+  version?: string
+  author?: string
+  publishedAt?: string
+  updatedAt?: string
+  isSpa?: boolean
+}
+```
+
+### Structured Data Types
+
+DocEntry: { title, url, section, summary, tags, updated_at }
+FaqEntry: { question, answer, category, url, updated_at }
+ProductEntry: { product_name, description, features, pricing, url, updated_at }
+ArticleEntry: { title, summary, published_at, updated_at, tags, url }
+PricingEntry: { plan_name, price, features, url, updated_at }
+ChangelogEntry: { version, date, changes, url }
+
+---
+
+## MCP Tools
+
+| Tool | Description | Parameters |
+|------|-------------|------------|
+| search | Search site content | query: string, limit?: number |
+| get_page | Get page by URL | url: string |
+| list_pages | List pages | type?: PageType |
+| list_faq | List FAQs | category?: string |
+| list_docs | List docs | section?: string |
+| list_products | List products | (none) |
+| list_articles | List articles | tag?: string |
+| list_pricing | List pricing | (none) |
+| list_changelog | List changelog | version?: string |
+| site_overview | Site stats | (none) |
+| get_config | Config summary | (none) |
+| ask | Natural language Q&A | question: string |
+
+## MCP Resources
+
+| Resource | URI | Description |
+|----------|-----|-------------|
+| llms-txt | file:///llms.txt | LLM-friendly site overview |
+| agent-index | file:///agent-index.json | Site metadata and API endpoints |
+| agent-sitemap | file:///agent-sitemap.json | Page metadata sitemap |
+| data-{type} | file:///data/{type}.json | Structured data (docs, faq, products, articles, pricing, changelog) |
+
+---
+
+## Plugin System
+
+Plugins are JavaScript modules that export lifecycle hooks:
+
+```javascript
+export default {
+  name: 'my-plugin',
+  beforeScan(config) { },
+  afterScan(pages) { return pages; },
+  beforeGenerate(scanResult) { },
+  afterGenerate(outDir) { },
+}
+```
+
+Hooks: beforeScan, afterScan, beforeGenerate, afterGenerate
+
+---
+
+## Docker Deployment
+
+```bash
+docker compose up -d
+# or
+docker build -t agentsite .
+docker run -p 3141:3141 -v ./agentsite.config.yaml:/app/agentsite.config.yaml:ro agentsite
+```
+
+## MCP Client Configuration
+
+```json
+{
+  "mcpServers": {
+    "my-site": {
+      "command": "npx",
+      "args": ["agentsite-kit", "mcp"]
+    }
+  }
+}
+```

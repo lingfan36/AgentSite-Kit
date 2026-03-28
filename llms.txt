@@ -1,0 +1,71 @@
+# AgentSite Kit
+
+> Make any website Agent-friendly. Scan, classify, extract, and serve structured data for AI agents.
+
+AgentSite Kit is an open-source CLI toolkit that scans websites, classifies pages, extracts content, and generates structured outputs (llms.txt, JSON APIs, MCP) so AI agents can reliably read, search, and query your site.
+
+## Docs
+
+- [README](https://github.com/lingfan36/AgentSite-Kit/blob/main/README.md): Full documentation, quick start, configuration
+- [README (中文)](https://github.com/lingfan36/AgentSite-Kit/blob/main/README.zh-CN.md): Chinese documentation
+- [Contributing](https://github.com/lingfan36/AgentSite-Kit/blob/main/CONTRIBUTING.md): Development setup and contribution guide
+
+## Features
+
+- Scan: Discovers pages via sitemap or crawling, respects robots.txt
+- Classify: Auto-detects page types (docs, FAQ, blog, product, pricing, changelog)
+- Extract: Titles, summaries, headings, metadata, body content
+- Generate: llms.txt, agent-sitemap.json, agent-index.json, structured JSON
+- Serve: Query API for agents to search and retrieve content
+- MCP: Model Context Protocol server for direct AI tool integration
+- Dynamic Site Management: Add, remove, scan sites via REST API at runtime
+- Multi-Site: Manage multiple websites from a single instance
+- LLM-Assisted: Optional AI-powered classification and summarization
+- Plugin System: Lifecycle hooks for custom processing
+
+## API Endpoints
+
+- GET /api/health: Health check
+- GET /api/search?q={query}: Full-text search
+- GET /api/pages/{id}: Single page details
+- GET /api/docs: Documentation entries
+- GET /api/faq: FAQ entries
+- GET /api/products: Product entries
+- GET /api/articles: Blog/article entries
+- GET /api/pricing: Pricing information
+- GET /api/changelog: Changelog entries
+- GET /api/stats: Site statistics
+- GET /api/sites: List all configured sites
+- POST /api/sites: Add a new site (body: {url, name, description})
+- DELETE /api/sites/{slug}: Remove a site
+- POST /api/sites/{slug}/scan: Scan a specific site
+- POST /api/rescan: Rescan all, or pass {url} for ad-hoc scan
+- GET /api/config: Current configuration
+- GET /api/files: Generated file listing
+
+## MCP Tools
+
+- search: Search site content by keyword
+- get_page: Get page details by URL
+- list_pages: List pages with optional type filter
+- list_faq: FAQ entries with optional category filter
+- list_docs: Documentation with optional section filter
+- list_products: Product entries
+- list_articles: Articles with optional tag filter
+- list_pricing: Pricing/plan entries
+- list_changelog: Changelog with optional version filter
+- site_overview: High-level site stats
+- ask: Natural language question about site content
+
+## Quick Start
+
+- Install: npm install -g agentsite-kit
+- Initialize: agentsite init
+- Scan: agentsite scan
+- Generate: agentsite generate
+- Serve: agentsite serve
+- MCP: agentsite mcp
+
+## Optional
+
+- [llms-full.txt](https://github.com/lingfan36/AgentSite-Kit/blob/main/llms-full.txt): Detailed technical reference
