@@ -9,7 +9,13 @@ set -e
 REMOTE_HOST="root@47.85.109.161"
 REMOTE_DIR="/opt/agentsite-kit"
 LOCAL_DIR="$(cd "$(dirname "$0")" && pwd)"
+SSH_OPTS="-o StrictHostKeyChecking=accept-new -o ConnectTimeout=15 -o UserKnownHostsFile=$HOME/.ssh/known_hosts -i $HOME/.ssh/id_rsa"
+export SCP_OPTS="$SSH_OPTS"
 # ================================================
+
+# Use SSH_OPTS for all ssh/scp commands
+ssh()  { command ssh  $SSH_OPTS "$@"; }
+scp()  { command scp  $SSH_OPTS "$@"; }
 
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -77,14 +83,13 @@ cd $REMOTE_DIR
 tar xzf /tmp/agentsite-deploy.tar.gz
 rm -f /tmp/agentsite-deploy.tar.gz
 
-# 如果没有配置文件，自动生成默认配置
-if [ ! -f agentsite.config.yaml ]; then
-  echo ">>> No config found, generating default..."
-  cat > agentsite.config.yaml <<'YAML'
+# 写入多站点默认配置（覆盖旧的 example.com 配置）
+echo ">>> Writing multi-site config..."
+cat > agentsite.config.yaml <<'YAML'
 site:
-  url: "https://example.com"
-  name: "My Site"
-  description: "AgentSite Kit default config"
+  url: "http://localhost"
+  name: "AgentSite Hub"
+  description: "Multi-site AgentSite Kit instance. Add sites via POST /api/sites."
 
 scan:
   maxPages: 100
@@ -125,9 +130,10 @@ access:
     - changelog
   summaryOnly: false
   allowSearch: true
+
+sites: []
 YAML
-  echo "Default config created. Edit $REMOTE_DIR/agentsite.config.yaml to set your site URL."
-fi
+  echo "Default config created. Add sites via POST /api/sites or edit $REMOTE_DIR/agentsite.config.yaml."
 EXTRACT_EOF
 
 rm -f "$TMPFILE"
