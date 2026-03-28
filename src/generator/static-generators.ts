@@ -86,6 +86,11 @@ export function generateAgentIndex(scanResult: ScanResult, siteName: string, sit
     changelog: '/api/changelog',
     stats: '/api/stats',
     config: '/api/config',
+    sites: '/api/sites',
+    addSite: 'POST /api/sites',
+    removeSite: 'DELETE /api/sites/{slug}',
+    scanSite: 'POST /api/sites/{slug}/scan',
+    rescan: 'POST /api/rescan',
   };
 
   return {

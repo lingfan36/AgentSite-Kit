@@ -2,6 +2,7 @@ import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import rateLimit from '@fastify/rate-limit';
 import type { ValidatedConfig } from '../config/schema.js';
+import type { NormalizedConfig } from '../config/loader.js';
 import type { ScannedPage } from '../types/page.js';
 import { isPageAllowed } from '../utils/access-control.js';
 import { dashboardHtml } from '../web/dashboard.js';
@@ -20,7 +21,7 @@ export interface ServerData {
   pages: ScannedPage[];
 }
 
-export async function createApp(config: ValidatedConfig, data: ServerData) {
+export async function createApp(config: ValidatedConfig | NormalizedConfig, data: ServerData) {
   const app = Fastify({ logger: false });
 
   await app.register(cors, { origin: true });
@@ -136,9 +137,24 @@ export async function createApp(config: ValidatedConfig, data: ServerData) {
   registerContentRoutes(app, filteredData, config);
 
   // Operation endpoints (rescan / regenerate)
-  app.post('/api/rescan', async () => {
+  app.post<{ Body: { url?: string } }>('/api/rescan', async (req) => {
     try {
+      const targetUrl = req.body?.url;
       const { runScan } = await import('../commands/scan.js');
+
+      if (targetUrl) {
+        // Scan a specific URL on-the-fly (not necessarily in config)
+        const { loadConfig: loadCfg } = await import('../config/loader.js');
+        const currentConfig = loadCfg();
+        const adhocConfig = {
+          ...currentConfig,
+          site: { url: targetUrl, name: 'adhoc-scan', description: '' },
+          output: { ...currentConfig.output, dir: `.agentsite-adhoc` },
+        };
+        const result = await runScan(adhocConfig);
+        return { ok: true, message: `Scan complete for ${targetUrl}. ${result.totalPages} pages scanned.`, totalPages: result.totalPages };
+      }
+
       const result = await runScan();
       return { ok: true, message: `Rescan complete. ${result.totalPages} pages scanned.` };
     } catch (err) {

@@ -162,7 +162,7 @@ export function registerScanCommand(program: Command) {
       if (!opts.llm) {
         // Override LLM config to disable it
         const config = loadConfig();
-        (config as Record<string, unknown>).llm = undefined;
+        (config as unknown as Record<string, unknown>).llm = undefined;
         await runScan(config);
       } else {
         await runScan();

@@ -45,6 +45,7 @@ AgentSite Kit adds an **Agent-readable layer** on top of your existing site — 
 - **LLM-Assisted** — Optional AI-powered classification and summarization
 - **Plugin System** — Lifecycle hooks for custom processing
 - **Multi-Site** — Manage multiple websites from a single config
+- **Dynamic Site Management** — Add, remove, and scan sites via REST API at runtime
 - **Docker** — Ready-to-deploy container support
 
 ## Quick Start
@@ -143,6 +144,37 @@ Once `agentsite serve` is running:
 | `GET /api/files` | Generated file listing |
 | `GET /api/access-log` | Access log |
 | `GET /api/sites` | All configured sites (multi-site) |
+| `POST /api/sites` | Add a new site dynamically |
+| `DELETE /api/sites/:slug` | Remove a site |
+| `POST /api/sites/:slug/scan` | Trigger scan for a specific site |
+| `POST /api/rescan` | Rescan all sites, or pass `{ "url": "..." }` for ad-hoc scan |
+
+### Site Management API
+
+Manage sites dynamically via API — no need to SSH in and edit config files:
+
+```bash
+# Add a new site
+curl -X POST http://localhost:3141/api/sites \
+  -H 'Content-Type: application/json' \
+  -d '{"url": "https://example.com", "name": "Example", "description": "My site"}'
+
+# List all sites
+curl http://localhost:3141/api/sites
+
+# Scan a specific site
+curl -X POST http://localhost:3141/api/sites/example/scan
+
+# Remove a site
+curl -X DELETE http://localhost:3141/api/sites/example
+
+# Ad-hoc scan any URL (without adding to config)
+curl -X POST http://localhost:3141/api/rescan \
+  -H 'Content-Type: application/json' \
+  -d '{"url": "https://any-website.com"}'
+```
+
+Changes are persisted to `agentsite.config.yaml` automatically.
 
 ## Generated Files
 
@@ -233,6 +265,7 @@ llm:
 | Page classification | ✅ | ❌ | ❌ | ❌ |
 | Structured JSON export | ✅ | ❌ | ❌ | ❌ |
 | Query API server | ✅ | ❌ | ❌ | ❌ |
+| Dynamic site management API | ✅ | ❌ | ❌ | ❌ |
 | MCP integration | ✅ | ❌ | ❌ | ❌ |
 | Incremental updates | ✅ | ❌ | ❌ | ❌ |
 | Multi-site support | ✅ | ❌ | ❌ | ❌ |

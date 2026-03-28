@@ -1,6 +1,7 @@
 import { Command } from 'commander';
-import { loadConfig, toSlug } from '../config/loader.js';
+import { loadConfig, toSlug, type NormalizedConfig } from '../config/loader.js';
 import { createApp, type ServerData } from '../server/app.js';
+import { registerSiteRoutes } from '../server/routes/site-routes.js';
 import { log } from '../utils/logger.js';
 import { loadSiteData } from '../utils/data-loader.js';
 
@@ -10,7 +11,7 @@ export function registerServeCommand(program: Command) {
     .description('Start the Agent-friendly API server')
     .option('-p, --port <port>', 'Port number')
     .action(async (opts) => {
-      const config = loadConfig();
+      let config = loadConfig();
       const outDir = config.output.dir;
 
       // Load primary site data (allow empty data so server can still boot)
@@ -25,6 +26,13 @@ export function registerServeCommand(program: Command) {
 
       const port = parseInt(opts.port, 10) || config.server.port;
       const app = await createApp(config, data);
+
+      // Register site management routes (POST /api/sites, DELETE /api/sites/:slug, POST /api/sites/:slug/scan)
+      registerSiteRoutes(
+        app,
+        () => config,
+        (c) => { config = c; },
+      );
 
       // Multi-site: register additional site routes
       if (config.resolvedSites.length > 1) {
@@ -70,23 +78,27 @@ export function registerServeCommand(program: Command) {
       await app.listen({ port, host: '0.0.0.0' });
       log.success(`API server running at http://localhost:${port}`);
       log.info('Endpoints:');
-      console.log('  GET /api/health');
-      console.log('  GET /api/search?q=keyword');
-      console.log('  GET /api/pages/:id');
-      console.log('  GET /api/faq');
-      console.log('  GET /api/products');
-      console.log('  GET /api/docs');
-      console.log('  GET /api/articles');
-      console.log('  GET /api/pricing');
-      console.log('  GET /api/changelog');
-      console.log('  GET /api/stats');
-      console.log('  GET /api/config');
-      console.log('  GET /api/files');
-      console.log('  GET /api/access-log');
-      console.log('  GET /api/sites');
+      console.log('  GET  /api/health');
+      console.log('  GET  /api/search?q=keyword');
+      console.log('  GET  /api/pages/:id');
+      console.log('  GET  /api/faq');
+      console.log('  GET  /api/products');
+      console.log('  GET  /api/docs');
+      console.log('  GET  /api/articles');
+      console.log('  GET  /api/pricing');
+      console.log('  GET  /api/changelog');
+      console.log('  GET  /api/stats');
+      console.log('  GET  /api/config');
+      console.log('  GET  /api/files');
+      console.log('  GET  /api/access-log');
+      console.log('  GET  /api/sites');
+      console.log('  POST /api/sites          (add site)');
+      console.log('  DELETE /api/sites/:slug   (remove site)');
+      console.log('  POST /api/sites/:slug/scan (scan site)');
+      console.log('  POST /api/rescan         (rescan all, or {url} for ad-hoc)');
       if (config.resolvedSites.length > 1) {
         for (const s of config.resolvedSites) {
-          console.log(`  GET /api/${toSlug(s.site.name)}/* (multi-site)`);
+          console.log(`  GET  /api/${toSlug(s.site.name)}/* (multi-site)`);
         }
       }
     });
